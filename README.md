@@ -1,1 +1,8 @@
-CS3307 Group Project
+Requirements:
+- CMake
+- wxWidgets
+
+Build and run:
+cmake -S . -B build
+cmake --build build
+./build/group04
