@@ -11,6 +11,12 @@ add_executable(group04
     src/StudentProfilePanel.cpp
     src/CourseCatalogPanel.cpp
     src/ScheduleValidationPanel.cpp
+    src/Term.cpp
+    src/TimeSlot.cpp
+    src/CourseOffering.cpp
+    src/Course.cpp
+    src/CourseCatalog.cpp
+    src/CourseCatalogLoader.cpp
 )
 target_include_directories(group04 PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src)
 target_link_libraries(group04 ${wxWidgets_LIBRARIES})
