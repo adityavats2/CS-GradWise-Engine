@@ -8,6 +8,7 @@ include(${wxWidgets_USE_FILE})
 add_executable(group04
     src/main.cpp
     src/MainFrame.cpp
+    src/StudentProfile.cpp
     src/StudentProfilePanel.cpp
     src/CourseCatalogPanel.cpp
     src/ScheduleValidationPanel.cpp
