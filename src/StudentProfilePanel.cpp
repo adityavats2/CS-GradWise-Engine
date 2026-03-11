@@ -4,6 +4,7 @@
 #include <algorithm>
 #include <wx/filename.h>
 #include <wx/stdpaths.h>
+#include <wx/scrolwin.h>
 
 StudentProfilePanel::StudentProfilePanel(wxWindow* parent)
     : wxPanel(parent, wxID_ANY) {
@@ -18,63 +19,99 @@ StudentProfilePanel::StudentProfilePanel(wxWindow* parent)
 }
 
 void StudentProfilePanel::BuildUI() {
+    wxScrolledWindow* scroll = new wxScrolledWindow(this, wxID_ANY);
+    scroll->SetScrollRate(0, 20);
+
     wxBoxSizer* mainSizer = new wxBoxSizer(wxVERTICAL);
 
-    wxStaticText* title = new wxStaticText(this, wxID_ANY, "Student Profile Input Page");
+    wxStaticText* title = new wxStaticText(scroll, wxID_ANY, "Student Profile Input Page");
     wxFont titleFont = title->GetFont();
     titleFont.SetPointSize(14);
     title->SetFont(titleFont);
     mainSizer->Add(title, 0, wxALL, 10);
 
     wxFlexGridSizer* formSizer = new wxFlexGridSizer(2, 5, 5);
-    formSizer->Add(new wxStaticText(this, wxID_ANY, "Current year:"), 0, wxALIGN_CENTER_VERTICAL);
-    yearCombo = new wxComboBox(this, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize, 0, nullptr, wxCB_READONLY);
+    formSizer->Add(new wxStaticText(scroll, wxID_ANY, "Current year:"), 0, wxALIGN_CENTER_VERTICAL);
+    yearCombo = new wxComboBox(scroll, wxID_ANY, wxEmptyString, wxDefaultPosition, wxSize(200, -1), 0, nullptr, wxCB_READONLY);
     PopulateYearCombo();
     formSizer->Add(yearCombo, 1, wxEXPAND);
-    formSizer->Add(new wxStaticText(this, wxID_ANY, "Specialization:"), 0, wxALIGN_CENTER_VERTICAL);
-    specializationCombo = new wxComboBox(this, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize, 0, nullptr, wxCB_READONLY);
+    formSizer->Add(new wxStaticText(scroll, wxID_ANY, "Specialization:"), 0, wxALIGN_CENTER_VERTICAL);
+    specializationCombo = new wxComboBox(scroll, wxID_ANY, wxEmptyString, wxDefaultPosition, wxSize(200, -1), 0, nullptr, wxCB_READONLY);
     PopulateSpecializationCombo();
     formSizer->Add(specializationCombo, 1, wxEXPAND);
     mainSizer->Add(formSizer, 0, wxEXPAND | wxALL, 10);
 
-    catalogStatusText = new wxStaticText(this, wxID_ANY, "Loading catalog...");
+    catalogStatusText = new wxStaticText(scroll, wxID_ANY, "Loading catalog...");
     mainSizer->Add(catalogStatusText, 0, wxLEFT | wxRIGHT | wxTOP, 10);
-    mainSizer->Add(new wxStaticText(this, wxID_ANY, "Completed courses (check all that apply):"), 0, wxLEFT | wxRIGHT | wxTOP, 10);
-    coursesCheckList = new wxCheckListBox(this, wxID_ANY, wxDefaultPosition, wxSize(400, 180));
-    PopulateCoursesList();
-    mainSizer->Add(coursesCheckList, 1, wxEXPAND | wxALL, 10);
 
-    selectionStatusText = new wxStaticText(this, wxID_ANY, "0 courses selected. Click Save Profile to save to your profile.");
+    mainSizer->Add(new wxStaticText(scroll, wxID_ANY, "Check each course you have completed, then click Add:"), 0, wxLEFT | wxRIGHT | wxTOP, 10);
+    coursesCheckList = new wxCheckListBox(scroll, wxID_ANY, wxDefaultPosition, wxSize(420, 220), 0, nullptr, wxLB_SINGLE | wxLB_ALWAYS_SB);
+    coursesCheckList->SetMinSize(wxSize(420, 220));
+    mainSizer->Add(coursesCheckList, 0, wxEXPAND | wxALL, 10);
+
+    wxBoxSizer* addRemoveSizer = new wxBoxSizer(wxHORIZONTAL);
+    addButton = new wxButton(scroll, wxID_ANY, "Add checked courses to completed");
+    removeButton = new wxButton(scroll, wxID_ANY, "Remove selected from completed");
+    addRemoveSizer->Add(addButton, 0, wxRIGHT, 10);
+    addRemoveSizer->Add(removeButton, 0);
+    mainSizer->Add(addRemoveSizer, 0, wxLEFT | wxRIGHT | wxBOTTOM, 10);
+
+    mainSizer->Add(new wxStaticText(scroll, wxID_ANY, "Your completed courses (click Save Profile to save):"), 0, wxLEFT | wxRIGHT | wxTOP, 10);
+    completedCoursesList = new wxListBox(scroll, wxID_ANY, wxDefaultPosition, wxSize(420, 120), 0, nullptr, wxLB_SINGLE | wxLB_ALWAYS_SB);
+    completedCoursesList->SetMinSize(wxSize(420, 120));
+    mainSizer->Add(completedCoursesList, 0, wxEXPAND | wxALL, 10);
+
+    selectionStatusText = new wxStaticText(scroll, wxID_ANY, "0 courses in completed list. Click Save Profile to save to your profile.");
     selectionStatusText->SetForegroundColour(wxColour(0, 100, 0));
     mainSizer->Add(selectionStatusText, 0, wxLEFT | wxRIGHT | wxBOTTOM, 10);
 
-    saveButton = new wxButton(this, wxID_ANY, "Save Profile");
+    saveButton = new wxButton(scroll, wxID_ANY, "Save Profile");
     mainSizer->Add(saveButton, 0, wxALL, 10);
 
-    missingLabel = new wxStaticText(this, wxID_ANY, "Missing graduation requirements (based on your specialization):");
+    missingLabel = new wxStaticText(scroll, wxID_ANY, "Missing graduation requirements (based on your specialization):");
     mainSizer->Add(missingLabel, 0, wxLEFT | wxRIGHT | wxTOP, 10);
-    missingList = new wxListBox(this, wxID_ANY, wxDefaultPosition, wxSize(400, 120), 0, nullptr, wxLB_SINGLE);
+    missingList = new wxListBox(scroll, wxID_ANY, wxDefaultPosition, wxSize(420, 100), 0, nullptr, wxLB_SINGLE | wxLB_ALWAYS_SB);
+    missingList->SetMinSize(wxSize(420, 100));
     mainSizer->Add(missingList, 0, wxEXPAND | wxALL, 10);
 
-    SetSizer(mainSizer);
+    scroll->SetSizer(mainSizer);
+    scroll->FitInside();
+
+    wxBoxSizer* panelSizer = new wxBoxSizer(wxVERTICAL);
+    panelSizer->Add(scroll, 1, wxEXPAND);
+    SetSizer(panelSizer);
 
     saveButton->Bind(wxEVT_BUTTON, &StudentProfilePanel::OnSave, this);
+    addButton->Bind(wxEVT_BUTTON, &StudentProfilePanel::OnAddToCompleted, this);
+    removeButton->Bind(wxEVT_BUTTON, &StudentProfilePanel::OnRemoveFromCompleted, this);
+    completedCoursesList->Bind(wxEVT_LISTBOX_DCLICK, &StudentProfilePanel::OnCompletedCoursesDoubleClick, this);
     yearCombo->Bind(wxEVT_COMBOBOX, &StudentProfilePanel::OnSelectionChanged, this);
     specializationCombo->Bind(wxEVT_COMBOBOX, &StudentProfilePanel::OnSelectionChanged, this);
-    coursesCheckList->Bind(wxEVT_CHECKLISTBOX, &StudentProfilePanel::OnSelectionChanged, this);
 }
 
 void StudentProfilePanel::LoadCatalog() {
-    std::string path = "data/courses.txt";
-    if (!CourseCatalogLoader::loadFromFile(path, catalog)) {
-        path = "../data/courses.txt";
-        if (!CourseCatalogLoader::loadFromFile(path, catalog)) {
-            catalogStatusText->SetLabel("Catalog not loaded. Place data/courses.txt next to the app or in project root.");
-            return;
+    std::vector<std::string> pathsToTry;
+    wxString exePath = wxStandardPaths::Get().GetExecutablePath();
+    wxString exeDir = wxFileName(exePath).GetPath();
+    pathsToTry.push_back((exeDir + "/../data/courses.txt").ToStdString());
+    pathsToTry.push_back((exeDir + "/data/courses.txt").ToStdString());
+    pathsToTry.push_back("data/courses.txt");
+    pathsToTry.push_back("../data/courses.txt");
+
+    bool loaded = false;
+    for (const std::string& path : pathsToTry) {
+        if (CourseCatalogLoader::loadFromFile(path, catalog)) {
+            loaded = true;
+            break;
         }
+    }
+    if (!loaded) {
+        catalogStatusText->SetLabel("Catalog not loaded. Put data/courses.txt next to the app or in project root.");
+        return;
     }
     const std::vector<std::unique_ptr<Course>>& courses = catalog.getAllCourses();
     catalogStatusText->SetLabel(wxString::Format("Catalog loaded: %zu courses.", courses.size()));
+    PopulateCoursesCheckList();
 }
 
 void StudentProfilePanel::PopulateYearCombo() {
@@ -89,13 +126,24 @@ void StudentProfilePanel::PopulateSpecializationCombo() {
         specializationCombo->Append(wxString::FromUTF8(s.id + " - " + s.name));
 }
 
-void StudentProfilePanel::PopulateCoursesList() {
+void StudentProfilePanel::PopulateCoursesCheckList() {
     coursesCheckList->Clear();
     const std::vector<std::unique_ptr<Course>>& courses = catalog.getAllCourses();
     for (const auto& ptr : courses) {
         const Course* c = ptr.get();
         if (c)
             coursesCheckList->Append(wxString::FromUTF8(c->getCode() + " - " + c->getTitle()));
+    }
+}
+
+void StudentProfilePanel::RefreshCompletedCoursesList() {
+    completedCoursesList->Clear();
+    for (const std::string& code : profile.completedCourseIds) {
+        Course* c = catalog.getCourse(code);
+        if (c)
+            completedCoursesList->Append(wxString::FromUTF8(c->getCode() + " - " + c->getTitle()));
+        else
+            completedCoursesList->Append(wxString::FromUTF8(code));
     }
 }
 
@@ -116,13 +164,7 @@ void StudentProfilePanel::SyncUIFromProfile() {
             break;
         }
     }
-    const std::vector<std::unique_ptr<Course>>& courses = catalog.getAllCourses();
-    for (size_t i = 0; i < courses.size(); i++) {
-        const Course* c = courses[i].get();
-        if (!c) continue;
-        bool completed = std::find(profile.completedCourseIds.begin(), profile.completedCourseIds.end(), c->getCode()) != profile.completedCourseIds.end();
-        coursesCheckList->Check(static_cast<unsigned int>(i), completed);
-    }
+    RefreshCompletedCoursesList();
     RefreshMissingRequirements();
 }
 
@@ -138,13 +180,14 @@ void StudentProfilePanel::SyncProfileFromUI() {
         profile.specializationId = specs[static_cast<size_t>(specIdx)].id;
     }
     profile.completedCourseIds.clear();
-    const std::vector<std::unique_ptr<Course>>& courses = catalog.getAllCourses();
-    for (size_t i = 0; i < courses.size(); i++) {
-        if (coursesCheckList->IsChecked(static_cast<unsigned int>(i))) {
-            const Course* c = courses[i].get();
-            if (c)
-                profile.completedCourseIds.push_back(c->getCode());
-        }
+    for (int i = 0; i < completedCoursesList->GetCount(); i++) {
+        wxString item = completedCoursesList->GetString(static_cast<unsigned int>(i));
+        std::string s = item.ToStdString();
+        size_t pos = s.find(" - ");
+        if (pos != std::string::npos)
+            profile.completedCourseIds.push_back(s.substr(0, pos));
+        else
+            profile.completedCourseIds.push_back(s);
     }
 }
 
@@ -159,28 +202,12 @@ void StudentProfilePanel::RefreshMissingRequirements() {
         else
             missingList->Append(wxString::FromUTF8(code));
     }
-    UpdateSelectionStatus(-1);
+    UpdateSelectionStatus();
 }
 
-void StudentProfilePanel::UpdateSelectionStatus(int toggledIndex) {
-    unsigned int count = 0;
-    const std::vector<std::unique_ptr<Course>>& courses = catalog.getAllCourses();
-    for (unsigned int i = 0; i < coursesCheckList->GetCount(); i++) {
-        if (coursesCheckList->IsChecked(i))
-            count++;
-    }
-    wxString msg;
-    if (toggledIndex >= 0 && static_cast<size_t>(toggledIndex) < courses.size()) {
-        const Course* c = courses[static_cast<size_t>(toggledIndex)].get();
-        if (c) {
-            std::string codeTitle = c->getCode() + " - " + c->getTitle();
-            if (coursesCheckList->IsChecked(static_cast<unsigned int>(toggledIndex)))
-                msg = wxString::FromUTF8(codeTitle + " marked as completed. ");
-            else
-                msg = wxString::FromUTF8(codeTitle + " removed from completed. ");
-        }
-    }
-    msg += wxString::Format("%u course%s selected. Click Save Profile to save to your profile.", count, count == 1 ? "" : "s");
+void StudentProfilePanel::UpdateSelectionStatus() {
+    size_t count = profile.completedCourseIds.size();
+    wxString msg = wxString::Format("%zu course%s in completed list. Click Save Profile to save to your profile.", count, count == 1 ? "" : "s");
     selectionStatusText->SetLabel(msg);
 }
 
@@ -202,8 +229,65 @@ void StudentProfilePanel::OnSave(wxCommandEvent&) {
     }
 }
 
-void StudentProfilePanel::OnSelectionChanged(wxCommandEvent& event) {
-    int toggledIndex = (event.GetEventType() == wxEVT_CHECKLISTBOX) ? event.GetInt() : -1;
+void StudentProfilePanel::OnAddToCompleted(wxCommandEvent&) {
+    const std::vector<std::unique_ptr<Course>>& courses = catalog.getAllCourses();
+    int addedCount = 0;
+    for (unsigned int i = 0; i < coursesCheckList->GetCount(); i++) {
+        if (!coursesCheckList->IsChecked(i))
+            continue;
+        if (i >= courses.size())
+            continue;
+        const Course* c = courses[i].get();
+        if (!c)
+            continue;
+        const std::string& code = c->getCode();
+        if (std::find(profile.completedCourseIds.begin(), profile.completedCourseIds.end(), code) != profile.completedCourseIds.end())
+            continue;
+        profile.completedCourseIds.push_back(code);
+        coursesCheckList->Check(i, false);
+        addedCount++;
+    }
+    RefreshCompletedCoursesList();
     RefreshMissingRequirements();
-    UpdateSelectionStatus(toggledIndex);
+    if (addedCount > 0)
+        wxMessageBox(wxString::Format("Added %d course%s to your completed list.", addedCount, addedCount == 1 ? "" : "s"), "Courses added", wxOK | wxICON_INFORMATION, this);
+    else
+        wxMessageBox("No checked courses to add, or they are already in your completed list.", "Nothing to add", wxOK | wxICON_INFORMATION, this);
+}
+
+void StudentProfilePanel::OnCompletedCoursesDoubleClick(wxCommandEvent&) {
+    int sel = completedCoursesList->GetSelection();
+    if (sel < 0) return;
+    wxString item = completedCoursesList->GetString(static_cast<unsigned int>(sel));
+    std::string s = item.ToStdString();
+    size_t pos = s.find(" - ");
+    std::string code = (pos != std::string::npos) ? s.substr(0, pos) : s;
+    auto it = std::find(profile.completedCourseIds.begin(), profile.completedCourseIds.end(), code);
+    if (it != profile.completedCourseIds.end()) {
+        profile.completedCourseIds.erase(it);
+        RefreshCompletedCoursesList();
+        RefreshMissingRequirements();
+    }
+}
+
+void StudentProfilePanel::OnRemoveFromCompleted(wxCommandEvent&) {
+    int sel = completedCoursesList->GetSelection();
+    if (sel < 0) {
+        wxMessageBox("Select a course in the completed list first, then click Remove.", "No selection", wxOK | wxICON_INFORMATION, this);
+        return;
+    }
+    wxString item = completedCoursesList->GetString(static_cast<unsigned int>(sel));
+    std::string s = item.ToStdString();
+    size_t pos = s.find(" - ");
+    std::string code = (pos != std::string::npos) ? s.substr(0, pos) : s;
+    auto it = std::find(profile.completedCourseIds.begin(), profile.completedCourseIds.end(), code);
+    if (it != profile.completedCourseIds.end()) {
+        profile.completedCourseIds.erase(it);
+        RefreshCompletedCoursesList();
+        RefreshMissingRequirements();
+    }
+}
+
+void StudentProfilePanel::OnSelectionChanged(wxCommandEvent&) {
+    RefreshMissingRequirements();
 }
