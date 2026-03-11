@@ -44,6 +44,10 @@ void StudentProfilePanel::BuildUI() {
     PopulateCoursesList();
     mainSizer->Add(coursesCheckList, 1, wxEXPAND | wxALL, 10);
 
+    selectionStatusText = new wxStaticText(this, wxID_ANY, "0 courses selected. Click Save Profile to save to your profile.");
+    selectionStatusText->SetForegroundColour(wxColour(0, 100, 0));
+    mainSizer->Add(selectionStatusText, 0, wxLEFT | wxRIGHT | wxBOTTOM, 10);
+
     saveButton = new wxButton(this, wxID_ANY, "Save Profile");
     mainSizer->Add(saveButton, 0, wxALL, 10);
 
@@ -155,6 +159,29 @@ void StudentProfilePanel::RefreshMissingRequirements() {
         else
             missingList->Append(wxString::FromUTF8(code));
     }
+    UpdateSelectionStatus(-1);
+}
+
+void StudentProfilePanel::UpdateSelectionStatus(int toggledIndex) {
+    unsigned int count = 0;
+    const std::vector<std::unique_ptr<Course>>& courses = catalog.getAllCourses();
+    for (unsigned int i = 0; i < coursesCheckList->GetCount(); i++) {
+        if (coursesCheckList->IsChecked(i))
+            count++;
+    }
+    wxString msg;
+    if (toggledIndex >= 0 && static_cast<size_t>(toggledIndex) < courses.size()) {
+        const Course* c = courses[static_cast<size_t>(toggledIndex)].get();
+        if (c) {
+            std::string codeTitle = c->getCode() + " - " + c->getTitle();
+            if (coursesCheckList->IsChecked(static_cast<unsigned int>(toggledIndex)))
+                msg = wxString::FromUTF8(codeTitle + " marked as completed. ");
+            else
+                msg = wxString::FromUTF8(codeTitle + " removed from completed. ");
+        }
+    }
+    msg += wxString::Format("%u course%s selected. Click Save Profile to save to your profile.", count, count == 1 ? "" : "s");
+    selectionStatusText->SetLabel(msg);
 }
 
 void StudentProfilePanel::LoadProfile() {
@@ -166,12 +193,17 @@ void StudentProfilePanel::OnSave(wxCommandEvent&) {
     SyncProfileFromUI();
     if (profile.SaveToFile(profilePath.ToStdString())) {
         RefreshMissingRequirements();
+        size_t n = profile.completedCourseIds.size();
+        selectionStatusText->SetLabel(wxString::Format("Saved. %zu course%s saved to your profile.", n, n == 1 ? "" : "s"));
+        selectionStatusText->SetForegroundColour(wxColour(0, 100, 0));
         wxMessageBox("Profile saved successfully. You can edit and save again at any time.", "Profile Saved", wxOK | wxICON_INFORMATION, this);
     } else {
         wxMessageBox("Could not save profile to file.", "Save Error", wxOK | wxICON_ERROR, this);
     }
 }
 
-void StudentProfilePanel::OnSelectionChanged(wxCommandEvent&) {
+void StudentProfilePanel::OnSelectionChanged(wxCommandEvent& event) {
+    int toggledIndex = (event.GetEventType() == wxEVT_CHECKLISTBOX) ? event.GetInt() : -1;
     RefreshMissingRequirements();
+    UpdateSelectionStatus(toggledIndex);
 }
