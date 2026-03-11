@@ -25,6 +25,7 @@ private:
     wxListBox* missingList;
     wxStaticText* missingLabel;
     wxStaticText* catalogStatusText;
+    wxStaticText* selectionStatusText;
 
     void BuildUI();
     void LoadCatalog();
@@ -34,6 +35,8 @@ private:
     void SyncUIFromProfile();
     void SyncProfileFromUI();
     void RefreshMissingRequirements();
+    /** @brief Updates selection status text (optionally with the course that was just toggled) */
+    void UpdateSelectionStatus(int toggledIndex = -1);
 
     void OnSave(wxCommandEvent& event);
     void OnSelectionChanged(wxCommandEvent& event);
