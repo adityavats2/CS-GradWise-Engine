@@ -34,3 +34,8 @@ bool CourseCatalog::containsCourse(const std::string& code) const {
 const std::vector<std::unique_ptr<Course>>& CourseCatalog::getAllCourses() const {
     return courses;
 }
+
+void CourseCatalog::clear() {
+    courses.clear();
+    courseMap.clear();
+}

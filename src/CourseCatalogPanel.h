@@ -13,7 +13,7 @@ private:
     wxStaticText* detailsLabel;
     wxTextCtrl* detailsText;
     wxStaticText* statusText;
-    CourseCatalog catalog;
+    CourseCatalog* catalog;
     /** @brief Handles catalog loading
      *  @param event Button event
      */
@@ -32,8 +32,9 @@ private:
 public:
     /** @brief Creates course catalog panel
      *  @param parent Parent window
+     *  @param catalog Shared catalog owned by MainFrame
      */
-    explicit CourseCatalogPanel(wxWindow* parent);
+    CourseCatalogPanel(wxWindow* parent, CourseCatalog* catalog);
 };
 
 #endif

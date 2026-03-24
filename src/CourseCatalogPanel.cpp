@@ -20,8 +20,8 @@ std::string formatTime(int minutesFromMidnight) {
 }
 }
 
-CourseCatalogPanel::CourseCatalogPanel(wxWindow* parent)
-    : wxPanel(parent, wxID_ANY) {
+CourseCatalogPanel::CourseCatalogPanel(wxWindow* parent, CourseCatalog* catalog)
+    : wxPanel(parent, wxID_ANY), catalog(catalog) {
     wxBoxSizer* mainSizer = new wxBoxSizer(wxVERTICAL);
     wxStaticText* title = new wxStaticText(this, wxID_ANY, "Course Catalog");
     mainSizer->Add(title, 0, wxALL, 10);
@@ -49,15 +49,15 @@ CourseCatalogPanel::CourseCatalogPanel(wxWindow* parent)
 
 void CourseCatalogPanel::OnLoadCatalog(wxCommandEvent& event) {
     std::string filePath = filePathInput->GetValue().ToStdString();
-    catalog = CourseCatalog();
-    if (!CourseCatalogLoader::loadFromFile(filePath, catalog)) {
+    catalog->clear();
+    if (!CourseCatalogLoader::loadFromFile(filePath, *catalog)) {
         statusText->SetLabel("Failed to load catalog.");
         courseList->DeleteAllItems();
         detailsText->SetValue("No course details available.");
         return;
     }
     RefreshCourseList();
-    const std::vector<std::unique_ptr<Course>>& courses = catalog.getAllCourses();
+    const std::vector<std::unique_ptr<Course>>& courses = catalog->getAllCourses();
     if (!courses.empty()) {
         courseList->SetItemState(0, wxLIST_STATE_SELECTED, wxLIST_STATE_SELECTED);
         ShowCourseDetails(courses[0].get());
@@ -69,7 +69,7 @@ void CourseCatalogPanel::OnLoadCatalog(wxCommandEvent& event) {
 
 void CourseCatalogPanel::OnCourseSelected(wxListEvent& event) {
     long selectedRow = event.GetIndex();
-    const std::vector<std::unique_ptr<Course>>& courses = catalog.getAllCourses();
+    const std::vector<std::unique_ptr<Course>>& courses = catalog->getAllCourses();
     if (selectedRow < 0 || static_cast<std::size_t>(selectedRow) >= courses.size()) {
         detailsText->SetValue("No course details available.");
         return;
@@ -140,7 +140,7 @@ void CourseCatalogPanel::ShowCourseDetails(const Course* course) {
 
 void CourseCatalogPanel::RefreshCourseList() {
     courseList->DeleteAllItems();
-    const std::vector<std::unique_ptr<Course>>& courses = catalog.getAllCourses();
+    const std::vector<std::unique_ptr<Course>>& courses = catalog->getAllCourses();
     for (std::size_t i = 0; i < courses.size(); i++) {
         const Course* course = courses[i].get();
         long row = courseList->InsertItem(static_cast<long>(i), course->getCode());

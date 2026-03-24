@@ -1,15 +1,17 @@
 #include "MainFrame.h"
+#include "CourseCatalogLoader.h"
 
 /** @brief Creates the main window */
 MainFrame::MainFrame(const wxString& title)
     : wxFrame(nullptr, wxID_ANY, title, wxDefaultPosition, wxSize(900, 600)) {
+    CourseCatalogLoader::loadFromFile("data/courses.txt", catalog);
     wxPanel* mainPanel = new wxPanel(this);
     studentProfileButton = new wxButton(mainPanel, wxID_ANY, "Student Profile");
     courseCatalogButton = new wxButton(mainPanel, wxID_ANY, "Course Catalog");
     scheduleValidationButton = new wxButton(mainPanel, wxID_ANY, "Schedule Validation");
     pageBook = new wxSimplebook(mainPanel, wxID_ANY);
     studentProfilePanel = new StudentProfilePanel(pageBook);
-    courseCatalogPanel = new CourseCatalogPanel(pageBook);
+    courseCatalogPanel = new CourseCatalogPanel(pageBook, &catalog);
     scheduleValidationPanel = new ScheduleValidationPanel(pageBook);
     pageBook->AddPage(studentProfilePanel, "Student Profile");
     pageBook->AddPage(courseCatalogPanel, "Course Catalog");

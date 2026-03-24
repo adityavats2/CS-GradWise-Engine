@@ -2,16 +2,18 @@
 #define MAINFRAME_H
 #include <wx/wx.h>
 #include <wx/simplebook.h>
+#include "CourseCatalog.h"
 #include "StudentProfilePanel.h"
 #include "CourseCatalogPanel.h"
 #include "ScheduleValidationPanel.h"
 
 /** @brief Main application window */
 class MainFrame : public wxFrame {
-public: 
+public:
     explicit MainFrame(const wxString& title);
 
 private:
+    CourseCatalog catalog;
     wxButton* studentProfileButton;
     wxButton* courseCatalogButton;
     wxButton* scheduleValidationButton;
