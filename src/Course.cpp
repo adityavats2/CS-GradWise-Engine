@@ -16,7 +16,15 @@ double Course::getCredits() const {
     return credits;
 }
 
-const std::vector<Course*>& Course::getPrerequisites() const {
+std::vector<Course*> Course::getPrerequisites() const {
+    std::vector<Course*> flat;
+    for (const Prerequisite& prereq : prerequisites)
+        for (Course* c : prereq.courses)
+            flat.push_back(c);
+    return flat;
+}
+
+const std::vector<Prerequisite>& Course::getPrerequisiteRules() const {
     return prerequisites;
 }
 
@@ -28,7 +36,7 @@ const std::vector<CourseOffering>& Course::getOfferings() const {
     return offerings;
 }
 
-void Course::addPrerequisite(Course* prerequisite) {
+void Course::addPrerequisite(const Prerequisite& prerequisite) {
     prerequisites.push_back(prerequisite);
 }
 

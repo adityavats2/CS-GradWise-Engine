@@ -1,5 +1,6 @@
 #include "CourseCatalogPanel.h"
 #include "CourseCatalogLoader.h"
+#include "Prerequisite.h"
 #include <sstream>
 
 namespace {
@@ -15,7 +16,6 @@ std::string formatTime(int minutesFromMidnight) {
         stream << '0';
     }
     stream << minutes;
-
     return stream.str();
 }
 }
@@ -45,6 +45,12 @@ CourseCatalogPanel::CourseCatalogPanel(wxWindow* parent, CourseCatalog* catalog)
     SetSizer(mainSizer);
     loadButton->Bind(wxEVT_BUTTON, &CourseCatalogPanel::OnLoadCatalog, this);
     courseList->Bind(wxEVT_LIST_ITEM_SELECTED, &CourseCatalogPanel::OnCourseSelected, this);
+    if(!catalog->getAllCourses().empty()){
+        RefreshCourseList();
+        ShowCourseDetails(catalog->getAllCourses()[0].get());
+        courseList->SetItemState(0, wxLIST_STATE_SELECTED, wxLIST_STATE_SELECTED);
+        statusText->SetLabel("Catalog loaded successfully.");
+    }
 }
 
 void CourseCatalogPanel::OnLoadCatalog(wxCommandEvent& event) {
@@ -87,15 +93,15 @@ void CourseCatalogPanel::ShowCourseDetails(const Course* course) {
     details << "Title: " << course->getTitle() << "\n";
     details << "Credits: " << course->getCredits() << "\n\n";
     details << "Prerequisites: ";
-    const std::vector<Course*>& prerequisites = course->getPrerequisites();
+    const std::vector<Prerequisite>& prerequisites = course->getPrerequisiteRules();
     if (prerequisites.empty()) {
         details << "None";
     } else {
         for (std::size_t i = 0; i < prerequisites.size(); i++) {
             if (i > 0) {
-                details << ", ";
+                details << "; ";
             }
-            details << prerequisites[i]->getCode();
+            details << prerequisites[i].toString();
         }
     }
     details << "\n";

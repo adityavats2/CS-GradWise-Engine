@@ -1,4 +1,5 @@
 #include "CourseCatalogLoader.h"
+#include "Prerequisite.h"
 #include <cctype>
 #include <fstream>
 #include <memory>
@@ -20,6 +21,8 @@ struct PendingCourse {
     std::vector<std::string> prerequisiteCodes;
     std::vector<std::string> exclusionCodes;
     std::vector<PendingOffering> offerings;
+    std::vector<std::vector<std::string>> oneOfGroups;
+    std::vector<std::pair<double, std::vector<std::string>>> creditsFromGroups;
 };
 
 std::string trim(const std::string& text) {
@@ -127,6 +130,29 @@ bool CourseCatalogLoader::loadFromFile(const std::string& filePath, CourseCatalo
             currentCourse.exclusionCodes = splitCommaSeparatedList(line.substr(11));
             continue;
         }
+        if (startsWith(line, "PREREQ_ONE_OF:")) {
+            std::vector<std::string> codes = splitCommaSeparatedList(line.substr(14));
+            if(codes.empty()) {
+                return false;
+            }
+            currentCourse.oneOfGroups.push_back(codes);
+            continue;
+        }
+        if (startsWith(line, "PREREQ_CREDITS_FROM:")) {
+            std::vector<std::string> parts = splitCommaSeparatedList(line.substr(20));
+            if (parts.size() < 2) {
+                return false;
+            }
+            double requiredCredits;
+            try {
+                requiredCredits = std::stod(parts[0]);
+            } catch (const std::exception&) {
+                return false;
+            }
+            std::vector<std::string> codes(parts.begin() + 1, parts.end());
+            currentCourse.creditsFromGroups.push_back({requiredCredits, codes});
+            continue;
+        }
         if (startsWith(line, "OFFERING:")) {
             std::vector<std::string> offeringParts = splitCommaSeparatedList(line.substr(9));
             if (offeringParts.size() != 2) {
@@ -192,7 +218,35 @@ bool CourseCatalogLoader::loadFromFile(const std::string& filePath, CourseCatalo
             if (prerequisite == nullptr) {
                 return false;
             }
-            course->addPrerequisite(prerequisite);
+            Prerequisite prereq;
+            prereq.type = PrerequisiteType::SIMPLE;
+            prereq.courses = {prerequisite};
+            course->addPrerequisite(prereq);
+        }
+        for (const std::vector<std::string>& group : pendingCourse.oneOfGroups) {
+            Prerequisite prereq;
+            prereq.type = PrerequisiteType::ONE_OF;
+            for (const std::string& code : group) {
+                Course* c = catalog.getCourse(code);
+                if (c == nullptr) {
+                    return false;
+                }
+                prereq.courses.push_back(c);
+            }
+            course->addPrerequisite(prereq);
+        }
+        for (const std::pair<double, std::vector<std::string>>& entry : pendingCourse.creditsFromGroups) {
+            Prerequisite prereq;
+            prereq.type = PrerequisiteType::CREDITS_FROM;
+            prereq.requiredCredits = entry.first;
+            for (const std::string& code : entry.second) {
+                Course* c = catalog.getCourse(code);
+                if (c == nullptr) {
+                    return false;
+                }
+                prereq.courses.push_back(c);
+            }
+            course->addPrerequisite(prereq);
         }
         for (const std::string& exclusionCode : pendingCourse.exclusionCodes) {
             Course* exclusion = catalog.getCourse(exclusionCode);
