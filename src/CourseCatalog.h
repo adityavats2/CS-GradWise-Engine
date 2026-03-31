@@ -33,6 +33,8 @@ public:
      *  @return All courses in the catalog
      */
     const std::vector<std::unique_ptr<Course>>& getAllCourses() const;
+    /** @brief Removes all courses from the catalog */
+    void clear();
 };
 
 #endif

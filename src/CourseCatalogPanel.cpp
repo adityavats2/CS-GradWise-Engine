@@ -1,5 +1,6 @@
 #include "CourseCatalogPanel.h"
 #include "CourseCatalogLoader.h"
+#include "Prerequisite.h"
 #include <sstream>
 
 namespace {
@@ -15,13 +16,12 @@ std::string formatTime(int minutesFromMidnight) {
         stream << '0';
     }
     stream << minutes;
-
     return stream.str();
 }
 }
 
-CourseCatalogPanel::CourseCatalogPanel(wxWindow* parent)
-    : wxPanel(parent, wxID_ANY) {
+CourseCatalogPanel::CourseCatalogPanel(wxWindow* parent, CourseCatalog* catalog)
+    : wxPanel(parent, wxID_ANY), catalog(catalog) {
     wxBoxSizer* mainSizer = new wxBoxSizer(wxVERTICAL);
     wxStaticText* title = new wxStaticText(this, wxID_ANY, "Course Catalog");
     mainSizer->Add(title, 0, wxALL, 10);
@@ -45,19 +45,25 @@ CourseCatalogPanel::CourseCatalogPanel(wxWindow* parent)
     SetSizer(mainSizer);
     loadButton->Bind(wxEVT_BUTTON, &CourseCatalogPanel::OnLoadCatalog, this);
     courseList->Bind(wxEVT_LIST_ITEM_SELECTED, &CourseCatalogPanel::OnCourseSelected, this);
+    if(!catalog->getAllCourses().empty()){
+        RefreshCourseList();
+        ShowCourseDetails(catalog->getAllCourses()[0].get());
+        courseList->SetItemState(0, wxLIST_STATE_SELECTED, wxLIST_STATE_SELECTED);
+        statusText->SetLabel("Catalog loaded successfully.");
+    }
 }
 
 void CourseCatalogPanel::OnLoadCatalog(wxCommandEvent& event) {
     std::string filePath = filePathInput->GetValue().ToStdString();
-    catalog = CourseCatalog();
-    if (!CourseCatalogLoader::loadFromFile(filePath, catalog)) {
+    catalog->clear();
+    if (!CourseCatalogLoader::loadFromFile(filePath, *catalog)) {
         statusText->SetLabel("Failed to load catalog.");
         courseList->DeleteAllItems();
         detailsText->SetValue("No course details available.");
         return;
     }
     RefreshCourseList();
-    const std::vector<std::unique_ptr<Course>>& courses = catalog.getAllCourses();
+    const std::vector<std::unique_ptr<Course>>& courses = catalog->getAllCourses();
     if (!courses.empty()) {
         courseList->SetItemState(0, wxLIST_STATE_SELECTED, wxLIST_STATE_SELECTED);
         ShowCourseDetails(courses[0].get());
@@ -69,7 +75,7 @@ void CourseCatalogPanel::OnLoadCatalog(wxCommandEvent& event) {
 
 void CourseCatalogPanel::OnCourseSelected(wxListEvent& event) {
     long selectedRow = event.GetIndex();
-    const std::vector<std::unique_ptr<Course>>& courses = catalog.getAllCourses();
+    const std::vector<std::unique_ptr<Course>>& courses = catalog->getAllCourses();
     if (selectedRow < 0 || static_cast<std::size_t>(selectedRow) >= courses.size()) {
         detailsText->SetValue("No course details available.");
         return;
@@ -87,15 +93,15 @@ void CourseCatalogPanel::ShowCourseDetails(const Course* course) {
     details << "Title: " << course->getTitle() << "\n";
     details << "Credits: " << course->getCredits() << "\n\n";
     details << "Prerequisites: ";
-    const std::vector<Course*>& prerequisites = course->getPrerequisites();
+    const std::vector<Prerequisite>& prerequisites = course->getPrerequisiteRules();
     if (prerequisites.empty()) {
         details << "None";
     } else {
         for (std::size_t i = 0; i < prerequisites.size(); i++) {
             if (i > 0) {
-                details << ", ";
+                details << "; ";
             }
-            details << prerequisites[i]->getCode();
+            details << prerequisites[i].toString();
         }
     }
     details << "\n";
@@ -140,7 +146,7 @@ void CourseCatalogPanel::ShowCourseDetails(const Course* course) {
 
 void CourseCatalogPanel::RefreshCourseList() {
     courseList->DeleteAllItems();
-    const std::vector<std::unique_ptr<Course>>& courses = catalog.getAllCourses();
+    const std::vector<std::unique_ptr<Course>>& courses = catalog->getAllCourses();
     for (std::size_t i = 0; i < courses.size(); i++) {
         const Course* course = courses[i].get();
         long row = courseList->InsertItem(static_cast<long>(i), course->getCode());
