@@ -44,7 +44,7 @@ void StudentProfilePanel::BuildUI() {
     catalogStatusText = new wxStaticText(scroll, wxID_ANY, "Loading catalog...");
     mainSizer->Add(catalogStatusText, 0, wxLEFT | wxRIGHT | wxTOP, 10);
 
-    mainSizer->Add(new wxStaticText(scroll, wxID_ANY, "Check each course you have completed, then click Add:"), 0, wxLEFT | wxRIGHT | wxTOP, 10);
+    mainSizer->Add(new wxStaticText(scroll, wxID_ANY, "Check completed courses and click Add, or double-click a course to add it:"), 0, wxLEFT | wxRIGHT | wxTOP, 10);
     coursesCheckList = new wxCheckListBox(scroll, wxID_ANY, wxDefaultPosition, wxSize(420, 220), 0, nullptr, wxLB_SINGLE | wxLB_ALWAYS_SB);
     coursesCheckList->SetMinSize(wxSize(420, 220));
     mainSizer->Add(coursesCheckList, 0, wxEXPAND | wxALL, 10);
@@ -57,6 +57,7 @@ void StudentProfilePanel::BuildUI() {
     mainSizer->Add(addRemoveSizer, 0, wxLEFT | wxRIGHT | wxBOTTOM, 10);
 
     mainSizer->Add(new wxStaticText(scroll, wxID_ANY, "Your completed courses (click Save Profile to save):"), 0, wxLEFT | wxRIGHT | wxTOP, 10);
+    lastCompletedListSelection = -1;
     completedCoursesList = new wxListBox(scroll, wxID_ANY, wxDefaultPosition, wxSize(420, 120), 0, nullptr, wxLB_SINGLE | wxLB_ALWAYS_SB);
     completedCoursesList->SetMinSize(wxSize(420, 120));
     mainSizer->Add(completedCoursesList, 0, wxEXPAND | wxALL, 10);
@@ -84,7 +85,9 @@ void StudentProfilePanel::BuildUI() {
     saveButton->Bind(wxEVT_BUTTON, &StudentProfilePanel::OnSave, this);
     addButton->Bind(wxEVT_BUTTON, &StudentProfilePanel::OnAddToCompleted, this);
     removeButton->Bind(wxEVT_BUTTON, &StudentProfilePanel::OnRemoveFromCompleted, this);
+    completedCoursesList->Bind(wxEVT_LISTBOX, &StudentProfilePanel::OnCompletedListSelected, this);
     completedCoursesList->Bind(wxEVT_LISTBOX_DCLICK, &StudentProfilePanel::OnCompletedCoursesDoubleClick, this);
+    coursesCheckList->Bind(wxEVT_LISTBOX_DCLICK, &StudentProfilePanel::OnCoursesCheckListDoubleClick, this);
     yearCombo->Bind(wxEVT_COMBOBOX, &StudentProfilePanel::OnSelectionChanged, this);
     specializationCombo->Bind(wxEVT_COMBOBOX, &StudentProfilePanel::OnSelectionChanged, this);
 }
@@ -168,7 +171,7 @@ void StudentProfilePanel::SyncUIFromProfile() {
     RefreshMissingRequirements();
 }
 
-void StudentProfilePanel::SyncProfileFromUI() {
+void StudentProfilePanel::SyncYearSpecFromUI() {
     int yearIdx = yearCombo->GetSelection();
     if (yearIdx >= 0) {
         const auto& years = Academic::GetYearOptions();
@@ -179,20 +182,10 @@ void StudentProfilePanel::SyncProfileFromUI() {
         const auto& specs = Academic::GetSpecializations();
         profile.specializationId = specs[static_cast<size_t>(specIdx)].id;
     }
-    profile.completedCourseIds.clear();
-    for (int i = 0; i < completedCoursesList->GetCount(); i++) {
-        wxString item = completedCoursesList->GetString(static_cast<unsigned int>(i));
-        std::string s = item.ToStdString();
-        size_t pos = s.find(" - ");
-        if (pos != std::string::npos)
-            profile.completedCourseIds.push_back(s.substr(0, pos));
-        else
-            profile.completedCourseIds.push_back(s);
-    }
 }
 
 void StudentProfilePanel::RefreshMissingRequirements() {
-    SyncProfileFromUI();
+    SyncYearSpecFromUI();
     std::vector<std::string> missing = profile.GetMissingGraduationRequirements();
     missingList->Clear();
     for (const std::string& code : missing) {
@@ -217,7 +210,7 @@ void StudentProfilePanel::LoadProfile() {
 }
 
 void StudentProfilePanel::OnSave(wxCommandEvent&) {
-    SyncProfileFromUI();
+    SyncYearSpecFromUI();
     if (profile.SaveToFile(profilePath.ToStdString())) {
         RefreshMissingRequirements();
         size_t n = profile.completedCourseIds.size();
@@ -231,6 +224,10 @@ void StudentProfilePanel::OnSave(wxCommandEvent&) {
 
 void StudentProfilePanel::OnAddToCompleted(wxCommandEvent&) {
     const std::vector<std::unique_ptr<Course>>& courses = catalog.getAllCourses();
+    if (courses.empty() || coursesCheckList->GetCount() == 0) {
+        wxMessageBox("No courses to add. Is the catalog loaded? (Check the message at the top.)", "Catalog empty", wxOK | wxICON_WARNING, this);
+        return;
+    }
     int addedCount = 0;
     for (unsigned int i = 0; i < coursesCheckList->GetCount(); i++) {
         if (!coursesCheckList->IsChecked(i))
@@ -252,11 +249,33 @@ void StudentProfilePanel::OnAddToCompleted(wxCommandEvent&) {
     if (addedCount > 0)
         wxMessageBox(wxString::Format("Added %d course%s to your completed list.", addedCount, addedCount == 1 ? "" : "s"), "Courses added", wxOK | wxICON_INFORMATION, this);
     else
-        wxMessageBox("No checked courses to add, or they are already in your completed list.", "Nothing to add", wxOK | wxICON_INFORMATION, this);
+        wxMessageBox("Check one or more courses in the list (use the checkbox), or double-click a course to add it. Already-completed courses are skipped.", "Nothing to add", wxOK | wxICON_INFORMATION, this);
 }
 
-void StudentProfilePanel::OnCompletedCoursesDoubleClick(wxCommandEvent&) {
+void StudentProfilePanel::OnCoursesCheckListDoubleClick(wxCommandEvent& event) {
+    const std::vector<std::unique_ptr<Course>>& courses = catalog.getAllCourses();
+    int i = event.GetInt();
+    if (i < 0 || static_cast<size_t>(i) >= courses.size())
+        return;
+    const Course* c = courses[static_cast<size_t>(i)].get();
+    if (!c)
+        return;
+    const std::string& code = c->getCode();
+    if (std::find(profile.completedCourseIds.begin(), profile.completedCourseIds.end(), code) != profile.completedCourseIds.end())
+        return;
+    profile.completedCourseIds.push_back(code);
+    coursesCheckList->Check(static_cast<unsigned int>(i), false);
+    RefreshCompletedCoursesList();
+    RefreshMissingRequirements();
+    selectionStatusText->SetLabel(wxString::FromUTF8(code + " added to completed list."));
+}
+
+void StudentProfilePanel::OnCompletedCoursesDoubleClick(wxCommandEvent& event) {
     int sel = completedCoursesList->GetSelection();
+    if (sel < 0)
+        sel = event.GetInt();
+    if (sel < 0)
+        sel = lastCompletedListSelection;
     if (sel < 0) return;
     wxString item = completedCoursesList->GetString(static_cast<unsigned int>(sel));
     std::string s = item.ToStdString();
@@ -270,8 +289,14 @@ void StudentProfilePanel::OnCompletedCoursesDoubleClick(wxCommandEvent&) {
     }
 }
 
+void StudentProfilePanel::OnCompletedListSelected(wxCommandEvent& event) {
+    lastCompletedListSelection = event.GetInt();
+}
+
 void StudentProfilePanel::OnRemoveFromCompleted(wxCommandEvent&) {
     int sel = completedCoursesList->GetSelection();
+    if (sel < 0)
+        sel = lastCompletedListSelection;
     if (sel < 0) {
         wxMessageBox("Select a course in the completed list first, then click Remove.", "No selection", wxOK | wxICON_INFORMATION, this);
         return;

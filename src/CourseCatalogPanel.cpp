@@ -26,7 +26,7 @@ CourseCatalogPanel::CourseCatalogPanel(wxWindow* parent, CourseCatalog* catalog)
     wxStaticText* title = new wxStaticText(this, wxID_ANY, "Course Catalog");
     mainSizer->Add(title, 0, wxALL, 10);
     wxBoxSizer* loadSizer = new wxBoxSizer(wxHORIZONTAL);
-    filePathInput = new wxTextCtrl(this, wxID_ANY, "data/courses.txt");
+    filePathInput = new wxTextCtrl(this, wxID_ANY, "../data/courses.txt");
     loadButton = new wxButton(this, wxID_ANY, "Load Catalog");
     loadSizer->Add(filePathInput, 1, wxRIGHT | wxEXPAND, 10);
     loadSizer->Add(loadButton, 0);

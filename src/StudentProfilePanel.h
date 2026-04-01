@@ -22,6 +22,7 @@ private:
     wxComboBox* specializationCombo;
     wxCheckListBox* coursesCheckList;
     wxListBox* completedCoursesList;
+    int lastCompletedListSelection;
     wxButton* addButton;
     wxButton* removeButton;
     wxButton* saveButton;
@@ -37,7 +38,8 @@ private:
     void PopulateCoursesCheckList();
     void RefreshCompletedCoursesList();
     void SyncUIFromProfile();
-    void SyncProfileFromUI();
+    /** Updates year and specialization from combos only (completed courses stay in profile.) */
+    void SyncYearSpecFromUI();
     void RefreshMissingRequirements();
     void UpdateSelectionStatus();
 
@@ -45,6 +47,8 @@ private:
     void OnAddToCompleted(wxCommandEvent& event);
     void OnRemoveFromCompleted(wxCommandEvent& event);
     void OnCompletedCoursesDoubleClick(wxCommandEvent& event);
+    void OnCompletedListSelected(wxCommandEvent& event);
+    void OnCoursesCheckListDoubleClick(wxCommandEvent& event);
     void OnSelectionChanged(wxCommandEvent& event);
 };
 
