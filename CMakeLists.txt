@@ -19,6 +19,9 @@ add_executable(group04
     src/Course.cpp
     src/CourseCatalog.cpp
     src/CourseCatalogLoader.cpp
+    src/ScheduleGenerationEngine.cpp
+    src/PlannedSchedule.cpp
+    src/PlannedScheduleStorage.cpp
 )
 target_include_directories(group04 PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src)
 target_link_libraries(group04 ${wxWidgets_LIBRARIES})
