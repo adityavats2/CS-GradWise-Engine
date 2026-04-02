@@ -6,7 +6,7 @@
 #include "Term.h"
 
 /**
- * @brief Saved courses associated with one academic term.
+ * @brief Saves courses associated with one academic term.
  */
 struct PlannedTerm {
     Term term;
@@ -19,17 +19,17 @@ struct PlannedTerm {
 class PlannedSchedule {
 public:
     /**
-     * @brief Construct an empty planned schedule.
+     * @brief Constructs an empty planned schedule.
      */
     PlannedSchedule();
 
     /**
-     * @brief Remove all planned terms from memory.
+     * @brief Removes all the planned terms from memory.
      */
     void clear();
 
     /**
-     * @brief Insert or replace planned courses for a term.
+     * @brief Inserts or replaces planned courses for a term.
      *
      * @param term Term to update.
      * @param courseIds Planned course IDs for that term.
@@ -37,7 +37,7 @@ public:
     void setCoursesForTerm(const Term& term, const std::vector<std::string>& courseIds);
 
     /**
-     * @brief Get planned courses for one term.
+     * @brief Gets planned courses for one term.
      *
      * @param term Term to query.
      * @return Planned course IDs for the requested term.
@@ -45,7 +45,7 @@ public:
     std::vector<std::string> getCoursesForTerm(const Term& term) const;
 
     /**
-     * @brief Get unique planned courses from terms earlier than the input term.
+     * @brief Gets unique planned courses from terms earlier than the input term.
      *
      * @param term Cutoff term.
      * @return Unique planned course IDs from earlier terms.
@@ -53,7 +53,7 @@ public:
     std::vector<std::string> getCoursesBeforeTerm(const Term& term) const;
 
     /**
-     * @brief Access all planned terms in insertion order.
+     * @brief Accesses all planned terms in insertion order.
      *
      * @return Read-only list of planned terms.
      */

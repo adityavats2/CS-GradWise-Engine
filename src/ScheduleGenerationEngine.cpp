@@ -8,10 +8,10 @@
 
 namespace {
 /**
- * @brief Check whether two courses exclude each other.
+ * @brief Checks whether or not two courses exclude each other.
  *
- * @param a First course.
- * @param b Second course.
+ * @param a The First course.
+ * @param b The Second course.
  * @return True if either course excludes the other.
  */
 bool isExcludedPair(const Course* a, const Course* b) {
@@ -29,10 +29,10 @@ bool isExcludedPair(const Course* a, const Course* b) {
 }
 
 /**
- * @brief Collect offerings of a course in the target term.
+ * @brief Collects the offerings of a course in the target term.
  *
- * @param course Course to inspect.
- * @param term Target term.
+ * @param course Courses to inspect.
+ * @param term The target term.
  * @return Offering pointers that match the term.
  */
 std::vector<const CourseOffering*> getOfferingsInTerm(const Course* course, const Term& term) {
@@ -46,10 +46,10 @@ std::vector<const CourseOffering*> getOfferingsInTerm(const Course* course, cons
 }
 
 /**
- * @brief Check whether two offerings have any slot conflict.
+ * @brief Checks whether or not two offerings have any slot conflict.
  *
- * @param a First offering.
- * @param b Second offering.
+ * @param a The ffirst offering.
+ * @param b The Second offering.
  * @return True if any pair of slots overlaps.
  */
 bool offeringPairHasConflict(const CourseOffering* a, const CourseOffering* b) {
@@ -64,7 +64,7 @@ bool offeringPairHasConflict(const CourseOffering* a, const CourseOffering* b) {
 }
 
 /**
- * @brief Determine if two courses are unavoidably conflicting in a term.
+ * @brief Determines if two courses are unavoidably conflicting in a term.
  *
  * @param a First course.
  * @param b Second course.
@@ -91,9 +91,9 @@ bool coursesConflictInTerm(const Course* a, const Course* b, const Term& term) {
 }
 
 /**
- * @brief Evaluate all prerequisite rules for one course.
+ * @brief Evaluates all prerequisite rules for one course.
  *
- * @param course Course being evaluated.
+ * @param course Course to being evaluated.
  * @param prereqContextCourseIds IDs available as prerequisite context.
  * @return True if every prerequisite rule is satisfied.
  */
@@ -107,11 +107,11 @@ bool prerequisitesSatisfied(const Course* course, const std::vector<std::string>
 }
 
 /**
- * @brief Apply hard preference filters to a generated schedule.
+ * @brief Applies hard preference filters to a generated schedule.
  *
- * @param schedule Generated term schedule candidate.
+ * @param schedule Generates term schedule candidate.
  * @param catalog Course catalog for offering lookup.
- * @param term Target term for schedule offerings.
+ * @param term Targets the term for schedule offerings.
  * @param preferences User preference configuration.
  * @return True if the schedule satisfies hard constraints.
  */
@@ -146,11 +146,11 @@ bool satisfiesHardPreferences(
 }
 
 /**
- * @brief Compute a preference score for ranking schedule options.
+ * @brief Computes a preference score for ranking schedule options.
  *
- * @param schedule Generated schedule to score.
+ * @param schedule Generates a schedule to score.
  * @param catalog Course catalog for offering lookup.
- * @param term Target term for schedule offerings.
+ * @param term Targets term for schedule offerings.
  * @param preferences User preference configuration.
  * @return Higher score indicates a better match to preferences.
  */
@@ -222,9 +222,9 @@ double scoreSchedule(
 }
 
 /**
- * @brief Advance to the next logical academic term.
+ * @brief Advances to the next logical academic term.
  *
- * @param term Current term.
+ * @param term The current term.
  * @return Next chronological term.
  */
 Term nextTerm(const Term& term) {
@@ -241,9 +241,9 @@ Term nextTerm(const Term& term) {
 }
 
 /**
- * @brief Normalize a course ID for robust comparisons.
+ * @brief Normalizes a course ID for robust comparisons.
  *
- * @param id Raw course ID.
+ * @param id The Raw course ID.
  * @return Trimmed uppercase course ID.
  */
 std::string normalizeCourseId(const std::string& id) {
@@ -263,9 +263,9 @@ std::string normalizeCourseId(const std::string& id) {
 }
 
 /**
- * @brief Extract the first integer found in text.
+ * @brief Extracts the first integer found in text.
  *
- * @param text Input text.
+ * @param text The Input text.
  * @return Parsed integer, or -1 if none found.
  */
 int extractFirstInteger(const std::string& text) {
@@ -284,7 +284,7 @@ int extractFirstInteger(const std::string& text) {
 }
 
 /**
- * @brief Infer course level from the first numeric digit in a course code.
+ * @brief Infers course level from the first numeric digit in a course code.
  *
  * @param courseCode Course code text.
  * @return Level 1-4 when available, otherwise 0.
@@ -303,7 +303,7 @@ int inferCourseLevel(const std::string& courseCode) {
 }
 
 /**
- * @brief Get the highest inferred level from a set of course IDs.
+ * @brief Gets the highest inferred level from a set of course IDs.
  *
  * @param courseIds Course IDs to inspect.
  * @return Maximum inferred course level, or 0 if none.
@@ -318,7 +318,7 @@ int inferHighestCourseLevel(const std::vector<std::string>& courseIds) {
 }  // namespace
 
 /**
- * @brief Generate one valid schedule for a term via greedy selection.
+ * @brief Generates one valid schedule for a term via greedy selection.
  *
  * @param catalog Course catalog used for lookup and constraints.
  * @param term Target term for offerings.
@@ -398,7 +398,7 @@ GeneratedTermScheduleResult ScheduleGenerationEngine::GenerateOneValidTermSchedu
 }
 
 /**
- * @brief Generate multiple distinct valid schedules for one term.
+ * @brief Generates multiple distinct valid schedules for one term.
  *
  * @param catalog Course catalog used for lookup and constraints.
  * @param term Target term for offerings.
@@ -487,7 +487,7 @@ std::vector<GeneratedTermScheduleResult> ScheduleGenerationEngine::GenerateMulti
 }
 
 /**
- * @brief Generate a best-effort required-course pathway across terms.
+ * @brief Generates a best-effort required-course pathway across terms.
  *
  * @param catalog Course catalog used for lookup and constraints.
  * @param profile Student profile used for specialization and context.

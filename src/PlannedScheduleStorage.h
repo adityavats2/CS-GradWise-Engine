@@ -5,23 +5,23 @@
 #include "PlannedSchedule.h"
 
 /**
- * @brief File I/O helpers for reading and writing planned schedules.
+ * @brief The File I/O helpers for reading and writing planned schedules.
  */
 class PlannedScheduleStorage {
 public:
     /**
-     * @brief Load a planned schedule from disk.
+     * @brief Loads a planned schedule from disk.
      *
-     * @param path File path to read.
-     * @param schedule Destination in-memory schedule.
+     * @param path The file path to read.
+     * @param schedule The destination in-memory schedule.
      * @return True on successful parse/load.
      */
     static bool loadFromFile(const std::string& path, PlannedSchedule& schedule);
     /**
-     * @brief Save a planned schedule to disk.
+     * @brief Saves a planned schedule to disk.
      *
-     * @param path File path to write.
-     * @param schedule Source in-memory schedule.
+     * @param path The file path to write.
+     * @param schedule The source in-memory schedule.
      * @return True if the write succeeds.
      */
     static bool saveToFile(const std::string& path, const PlannedSchedule& schedule);

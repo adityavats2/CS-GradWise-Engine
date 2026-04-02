@@ -42,7 +42,7 @@ struct GeneratedMultiTermPathwayResult {
 class ScheduleGenerationEngine {
 public:
     /**
-     * @brief Generate one valid schedule for a target term using greedy selection.
+     * @brief Generates one valid schedule for a target term using greedy selection.
      *
      * @param catalog Course catalog used for lookup and constraints.
      * @param term Target term for generated offerings.
@@ -60,7 +60,7 @@ public:
     ) const;
 
     /**
-     * @brief Generate multiple distinct valid schedules for a term.
+     * @brief Generates multiple distinct valid schedules for a term.
      *
      * @param catalog Course catalog used for lookup and constraints.
      * @param term Target term for generated offerings.
@@ -82,7 +82,7 @@ public:
     ) const;
 
     /**
-     * @brief Generate a best-effort required-course pathway across multiple terms.
+     * @brief Generates a best-effort required-course pathway across multiple terms.
      *
      * @param catalog Course catalog used for lookup and constraints.
      * @param profile Student profile with specialization and completed courses.

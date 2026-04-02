@@ -13,7 +13,7 @@
 #include <wx/stdpaths.h>
 
 /**
- * @brief Construct the validation panel UI and bind event handlers.
+ * @brief Constructs the validation panel UI and bind event handlers.
  *
  * @param parent Parent wxWidgets window.
  */

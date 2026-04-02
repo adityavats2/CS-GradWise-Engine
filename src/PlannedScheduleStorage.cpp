@@ -7,10 +7,10 @@
 
 namespace {
 /**
- * @brief Trim leading/trailing ASCII whitespace.
+ * @brief Trims leading/trailing ASCII whitespace.
  *
- * @param text Input text.
- * @return Trimmed text.
+ * @param text The input text.
+ * @return The trimmed text.
  */
 std::string trim(const std::string& text) {
     std::size_t start = 0;
@@ -25,10 +25,10 @@ std::string trim(const std::string& text) {
 }
 
 /**
- * @brief Check whether text starts with a prefix.
+ * @brief Checks whether or not text starts with a prefix.
  *
- * @param text Full text.
- * @param prefix Required prefix.
+ * @param text The full text.
+ * @param prefix The required prefix.
  * @return True if @p text starts with @p prefix.
  */
 bool startsWith(const std::string& text, const std::string& prefix) {
@@ -36,10 +36,10 @@ bool startsWith(const std::string& text, const std::string& prefix) {
 }
 
 /**
- * @brief Parse a season label into the season enum.
+ * @brief Parses a season label into the season enum.
  *
- * @param seasonText Season token from file.
- * @param season Output season enum.
+ * @param seasonText The season token from file.
+ * @param season The output season enum.
  * @return True if parsing succeeds.
  */
 bool parseSeason(const std::string& seasonText, Season& season) {
@@ -59,10 +59,10 @@ bool parseSeason(const std::string& seasonText, Season& season) {
 }
 
 /**
- * @brief Convert season enum to storage text.
+ * @brief Converts the season enum to storage text.
  *
- * @param season Season enum value.
- * @return Serialized season string.
+ * @param season The season enum value.
+ * @return The serialized season string.
  */
 std::string seasonToString(Season season) {
     switch (season) {
@@ -75,12 +75,12 @@ std::string seasonToString(Season season) {
     }
     return "Fall";
 }
-}  // namespace
+}  
 
 /**
- * @brief Load planned schedule entries from file.
+ * @brief Loads the planned schedule entries from file.
  *
- * @param path File path to read.
+ * @param path The file path to read.
  * @param schedule Destination schedule to populate.
  * @return True on successful load/parse.
  */
@@ -160,11 +160,11 @@ bool PlannedScheduleStorage::loadFromFile(const std::string& path, PlannedSchedu
 }
 
 /**
- * @brief Save planned schedule entries to file.
+ * @brief Saves the planned schedule entries to file.
  *
- * @param path File path to write.
- * @param schedule Source schedule data.
- * @return True if writing succeeds.
+ * @param path The file path to write.
+ * @param schedule The source schedule data.
+ * @return True if the writing succeeds.
  */
 bool PlannedScheduleStorage::saveToFile(const std::string& path, const PlannedSchedule& schedule) {
     std::ofstream file(path);
