@@ -49,55 +49,55 @@ private:
 
     // Internal methods
     /**
-     * @brief Resolve and create the planned schedule file path.
+     * @brief Resolves and creates the planned schedule file path.
      */
     void InitPlannedSchedulePath();
     /**
-     * @brief Load persisted planned schedule data into memory.
+     * @brief Loads persisted planned schedule data into memory.
      */
     void LoadPlannedSchedule();
     /**
-     * @brief Persist the in-memory planned schedule to disk.
+     * @brief Persists the in-memory planned schedule to disk.
      *
      * @return True if the save succeeds.
      */
     bool SavePlannedSchedule();
     /**
-     * @brief Load the course catalog from available data paths.
+     * @brief Loads the course catalog from available data paths.
      */
     void LoadCatalog();
     /**
-     * @brief Populate the checklist with catalog courses.
+     * @brief Populates the checklist with catalog courses.
      */
     void PopulateCoursesList();
     /**
-     * @brief Refresh the read-only display of earlier saved terms.
+     * @brief Refreshes the read-only display of earlier saved terms.
      */
     void RefreshSavedEarlierPlansDisplay();
     /**
-     * @brief Refresh detail text for the currently selected generated option.
+     * @brief Refreshes detail text for the currently selected generated option.
      */
     void RefreshGeneratedOptionDisplay();
     /**
-     * @brief Rebuild the generated option selector entries.
+     * @brief Rebuilds the generated option selector entries.
      */
     void PopulateGeneratedOptionsChoice();
 
     // Event handlers
     /**
-     * @brief Validate selected courses and render generation/pathway output.
+     * @brief Validates selected courses and render generation/pathway output.
      *
      * @param event Button click event.
      */
     void OnValidate(wxCommandEvent& event);
     /**
-     * @brief Handle generated-option selector changes.
+     * @brief Handles generated-option selector changes.
      *
      * @param event Choice selection event.
      */
     void OnGeneratedOptionChanged(wxCommandEvent& event);
     /**
-     * @brief Clear persisted planned schedule state and refresh the panel.
+     * @brief Clears persisted planned schedule state and refresh the panel.
      *
      * @param event Button click event.
      */

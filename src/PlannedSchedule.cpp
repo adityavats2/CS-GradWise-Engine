@@ -4,10 +4,10 @@
 
 namespace {
 /**
- * @brief Convert season to an ordering rank for comparisons.
+ * @brief Converts the season to an orderinng rank for comparisons.
  *
- * @param season Season enum value.
- * @return Integer rank used for within-year ordering.
+ * @param season The season enum value.
+ * @return Integer rank used for within-year ordering is returned.
  */
 int seasonRank(Season season) {
     switch (season) {
@@ -22,11 +22,11 @@ int seasonRank(Season season) {
 }
 
 /**
- * @brief Check whether term @p a is strictly earlier than term @p b.
+ * @brief Checks whether or not term @p a is strictly earlier than term @p b.
  *
- * @param a Candidate earlier term.
- * @param b Candidate later term.
- * @return True when @p a occurs before @p b.
+ * @param a Candidate for the earlier term.
+ * @param b Candidate for the later term.
+ * @return True only when @p a occurs before @p b.
  */
 bool isEarlierThan(const Term& a, const Term& b) {
     if (a.getYear() != b.getYear()) {
@@ -34,25 +34,25 @@ bool isEarlierThan(const Term& a, const Term& b) {
     }
     return seasonRank(a.getSeason()) < seasonRank(b.getSeason());
 }
-}  // namespace
+}  
 
 /**
- * @brief Construct an empty planned schedule container.
+ * @brief Constructs an empty planned schedule container.
  */
 PlannedSchedule::PlannedSchedule() : plannedTerms() {}
 
 /**
- * @brief Remove all saved planned terms from memory.
+ * @brief Removes all the saved planned terms from memory.
  */
 void PlannedSchedule::clear() {
     plannedTerms.clear();
 }
 
 /**
- * @brief Insert or replace course IDs for a given term.
+ * @brief Inserts or replaces course IDs for a given term.
  *
- * @param term Term to update.
- * @param courseIds Planned course IDs for that term.
+ * @param term Term to update at the given moment.
+ * @param courseIds THe pllanned course IDs for that term.
  */
 void PlannedSchedule::setCoursesForTerm(const Term& term, const std::vector<std::string>& courseIds) {
     for (PlannedTerm& plannedTerm : plannedTerms) {
@@ -65,10 +65,10 @@ void PlannedSchedule::setCoursesForTerm(const Term& term, const std::vector<std:
 }
 
 /**
- * @brief Get course IDs saved for one term.
+ * @brief Gets course IDs saved for one term.
  *
  * @param term Term to query.
- * @return Course IDs for the term, or empty if missing.
+ * @return Course IDs for the term or flagged as empty if missing.
  */
 std::vector<std::string> PlannedSchedule::getCoursesForTerm(const Term& term) const {
     for (const PlannedTerm& plannedTerm : plannedTerms) {
@@ -80,7 +80,7 @@ std::vector<std::string> PlannedSchedule::getCoursesForTerm(const Term& term) co
 }
 
 /**
- * @brief Get unique course IDs from terms strictly before @p term.
+ * @brief Gets unique course IDs from terms strictly before @p term.
  *
  * @param term Cutoff term.
  * @return Unique course IDs planned in earlier terms.
@@ -103,7 +103,7 @@ std::vector<std::string> PlannedSchedule::getCoursesBeforeTerm(const Term& term)
 }
 
 /**
- * @brief Access all planned terms stored in memory.
+ * @brief Accesses all the planned terms stored in memory.
  *
  * @return Read-only list of planned terms.
  */
