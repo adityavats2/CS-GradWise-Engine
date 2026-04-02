@@ -16,6 +16,7 @@ add_executable(group04
     src/TimeSlot.cpp
     src/CourseOffering.cpp
     src/Prerequisite.cpp
+    src/OutputExportPanel.cpp
     src/Course.cpp
     src/CourseCatalog.cpp
     src/CourseCatalogLoader.cpp

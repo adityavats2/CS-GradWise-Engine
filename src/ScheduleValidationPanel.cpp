@@ -652,6 +652,7 @@ void ScheduleValidationPanel::OnValidate(wxCommandEvent&) {
         &preferences
     );
     lastGeneratedOptions = generatedOptions;
+    lastGeneratedTerm = currentValidationTerm;
     if (lastGeneratedOptions.size() > 3) {
         lastGeneratedOptions.resize(3);
     }

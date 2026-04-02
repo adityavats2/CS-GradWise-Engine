@@ -22,6 +22,11 @@ public:
      */
     explicit ScheduleValidationPanel(wxWindow* parent);
 
+    /** @brief Returns the last generated schedule options. */
+    const std::vector<GeneratedTermScheduleResult>& getLastGeneratedOptions() const {return lastGeneratedOptions;}
+    /** @brief Returns the term of the last generated schedule. */
+    Term getLastGeneratedTerm() const {return lastGeneratedTerm;}
+
 private:
     // Course catalog
     CourseCatalog catalog;
@@ -46,6 +51,7 @@ private:
     wxTextCtrl* generatedOptionDetailsTextCtrl;
     wxTextCtrl* savedEarlierPlansTextCtrl;
     std::vector<GeneratedTermScheduleResult> lastGeneratedOptions;
+    Term lastGeneratedTerm{Season::Fall, 0};
 
     // Internal methods
     /**
