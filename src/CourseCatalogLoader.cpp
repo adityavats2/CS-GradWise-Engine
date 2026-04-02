@@ -1,3 +1,8 @@
+/**
+ * @file CourseCatalogLoader.cpp
+ * @brief Implementation of CourseCatalogLoader::loadFromFile.
+ */
+
 #include "CourseCatalogLoader.h"
 #include "Prerequisite.h"
 #include <cctype>
@@ -69,8 +74,11 @@ bool parseSeason(const std::string& seasonText, Season& season) {
     }
     return false;
 }
-} 
+}
 
+/**
+ * @brief Parses COURSE blocks from disk and builds Course objects with offerings and prerequisite links.
+ */
 bool CourseCatalogLoader::loadFromFile(const std::string& filePath, CourseCatalog& catalog) {
     std::ifstream file(filePath);
     if (!file.is_open()) {
