@@ -6,6 +6,7 @@
 #include "StudentProfilePanel.h"
 #include "CourseCatalogPanel.h"
 #include "ScheduleValidationPanel.h"
+#include "OutputExportPanel.h"
 
 /** @brief Main application window */
 class MainFrame : public wxFrame {
@@ -17,10 +18,12 @@ private:
     wxButton* studentProfileButton;
     wxButton* courseCatalogButton;
     wxButton* scheduleValidationButton;
+    wxButton* outputExportButton;
     wxSimplebook* pageBook;
     StudentProfilePanel* studentProfilePanel;
     CourseCatalogPanel* courseCatalogPanel;
     ScheduleValidationPanel* scheduleValidationPanel;
+    OutputExportPanel* outputExportPanel;
     /** @brief Shows the selected page */
     void ShowPage(int pageIndex);
     /** @brief Handles Student Profile button clicks */
@@ -29,5 +32,7 @@ private:
     void OnCourseCatalog(wxCommandEvent& event);
     /** @brief Handles Schedule Validation button clicks */
     void OnScheduleValidation(wxCommandEvent& event);
+    /** @brief Handles Output and export button clicks */
+    void OnOutputExport(wxCommandEvent& event);
 };
 #endif
