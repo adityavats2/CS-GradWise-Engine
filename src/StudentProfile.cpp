@@ -1,3 +1,8 @@
+/**
+ * @file StudentProfile.cpp
+ * @brief Implementation of StudentProfile.
+ */
+
 #include "StudentProfile.h"
 #include <fstream>
 #include <algorithm>

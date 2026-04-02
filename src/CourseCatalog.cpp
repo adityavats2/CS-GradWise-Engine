@@ -1,3 +1,8 @@
+/**
+ * @file CourseCatalog.cpp
+ * @brief Implementation of CourseCatalog.
+ */
+
 #include "CourseCatalog.h"
 
 CourseCatalog::CourseCatalog() : courses(), courseMap() {}

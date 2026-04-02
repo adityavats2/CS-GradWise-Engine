@@ -1,9 +1,15 @@
+/**
+ * @file CourseCatalogPanel.cpp
+ * @brief Implementation of CourseCatalogPanel.
+ */
+
 #include "CourseCatalogPanel.h"
 #include "CourseCatalogLoader.h"
 #include "Prerequisite.h"
 #include <sstream>
 
 namespace {
+/** @brief Formats minutes since midnight as HH:MM for offering display. */
 std::string formatTime(int minutesFromMidnight) {
     int hours = minutesFromMidnight / 60;
     int minutes = minutesFromMidnight % 60;
@@ -20,13 +26,16 @@ std::string formatTime(int minutesFromMidnight) {
 }
 }
 
+/**
+ * @brief Builds UI, binds events, and optionally displays an already-loaded catalog.
+ */
 CourseCatalogPanel::CourseCatalogPanel(wxWindow* parent, CourseCatalog* catalog)
     : wxPanel(parent, wxID_ANY), catalog(catalog) {
     wxBoxSizer* mainSizer = new wxBoxSizer(wxVERTICAL);
     wxStaticText* title = new wxStaticText(this, wxID_ANY, "Course Catalog");
     mainSizer->Add(title, 0, wxALL, 10);
     wxBoxSizer* loadSizer = new wxBoxSizer(wxHORIZONTAL);
-    filePathInput = new wxTextCtrl(this, wxID_ANY, "../data/courses.txt");
+    filePathInput = new wxTextCtrl(this, wxID_ANY, "data/courses.txt");
     loadButton = new wxButton(this, wxID_ANY, "Load Catalog");
     loadSizer->Add(filePathInput, 1, wxRIGHT | wxEXPAND, 10);
     loadSizer->Add(loadButton, 0);
@@ -53,6 +62,9 @@ CourseCatalogPanel::CourseCatalogPanel(wxWindow* parent, CourseCatalog* catalog)
     }
 }
 
+/**
+ * @brief Loads catalog from the path in filePathInput; updates status and list on success or failure.
+ */
 void CourseCatalogPanel::OnLoadCatalog(wxCommandEvent& event) {
     std::string filePath = filePathInput->GetValue().ToStdString();
     catalog->clear();
@@ -73,6 +85,9 @@ void CourseCatalogPanel::OnLoadCatalog(wxCommandEvent& event) {
     statusText->SetLabel("Catalog loaded successfully.");
 }
 
+/**
+ * @brief Shows details for the course at the selected row index.
+ */
 void CourseCatalogPanel::OnCourseSelected(wxListEvent& event) {
     long selectedRow = event.GetIndex();
     const std::vector<std::unique_ptr<Course>>& courses = catalog->getAllCourses();
@@ -83,6 +98,9 @@ void CourseCatalogPanel::OnCourseSelected(wxListEvent& event) {
     ShowCourseDetails(courses[static_cast<std::size_t>(selectedRow)].get());
 }
 
+/**
+ * @brief Builds a multi-line description: prereqs, exclusions, offerings and time slots.
+ */
 void CourseCatalogPanel::ShowCourseDetails(const Course* course) {
     if(course == nullptr) {
         detailsText->SetValue("No course details available.");
@@ -144,6 +162,9 @@ void CourseCatalogPanel::ShowCourseDetails(const Course* course) {
     detailsText->SetValue(details.str());
 }
 
+/**
+ * @brief Clears and repopulates the list control from catalog.
+ */
 void CourseCatalogPanel::RefreshCourseList() {
     courseList->DeleteAllItems();
     const std::vector<std::unique_ptr<Course>>& courses = catalog->getAllCourses();

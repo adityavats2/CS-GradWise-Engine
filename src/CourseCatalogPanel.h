@@ -1,38 +1,57 @@
+/**
+ * @file CourseCatalogPanel.h
+ * @brief wxWidgets panel to load and browse the course catalog.
+ */
+
 #ifndef COURSECATALOGPANEL_H
 #define COURSECATALOGPANEL_H
 #include <wx/wx.h>
 #include <wx/listctrl.h>
 #include "CourseCatalog.h"
 
-/** @brief Panel for loading and viewing course catalog */
+/**
+ * @class CourseCatalogPanel
+ * @brief Loads courses from a user-specified file path and shows a table plus detailed read-only metadata.
+ *
+ * Displays code, title, credits, prerequisites, exclusions, and offerings with time slots. Does not own
+ * the catalog; MainFrame (or similar) provides a shared CourseCatalog pointer.
+ */
 class CourseCatalogPanel : public wxPanel {
 private:
-    wxTextCtrl* filePathInput;
+    wxTextCtrl* filePathInput;   /*!< Default path to courses file (e.g. ../data/courses.txt) */
     wxButton* loadButton;
-    wxListCtrl* courseList;
+    wxListCtrl* courseList;      /*!< Report: Code, Title, Credits */
     wxStaticText* detailsLabel;
-    wxTextCtrl* detailsText;
+    wxTextCtrl* detailsText;     /*!< Read-only details for selected course */
     wxStaticText* statusText;
-    CourseCatalog* catalog;
-    /** @brief Handles catalog loading
-     *  @param event Button event
+    CourseCatalog* catalog;      /*!< Non-owning; must outlive this panel */
+
+    /**
+     * @brief Clears catalog, loads from filePathInput, refreshes list and details.
+     * @param event Load button click.
      */
     void OnLoadCatalog(wxCommandEvent& event);
-    /** @brief Handles course selection
-     *  @param event List event
+
+    /**
+     * @brief Updates details pane for the selected list row.
+     * @param event List selection event.
      */
     void OnCourseSelected(wxListEvent& event);
-    /** @brief Shows details for one course
-     *  @param course Selected course
+
+    /**
+     * @brief Formats and shows course metadata in detailsText.
+     * @param course Course to display; nullptr shows empty message.
      */
     void ShowCourseDetails(const Course* course);
-    /** @brief Refreshes course list */
+
+    /** @brief Rebuilds courseList from catalog->getAllCourses(). */
     void RefreshCourseList();
 
 public:
-    /** @brief Creates course catalog panel
-     *  @param parent Parent window
-     *  @param catalog Shared catalog owned by MainFrame
+    /**
+     * @brief Constructs layout and bindings; if catalog is pre-filled, shows first course.
+     * @param parent Parent window (e.g. notebook page).
+     * @param catalog Shared CourseCatalog; not owned by this panel.
      */
     CourseCatalogPanel(wxWindow* parent, CourseCatalog* catalog);
 };

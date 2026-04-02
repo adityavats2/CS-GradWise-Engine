@@ -1,3 +1,8 @@
+/**
+ * @file StudentProfilePanel.cpp
+ * @brief Implementation of StudentProfilePanel.
+ */
+
 #include "StudentProfilePanel.h"
 #include "AcademicData.h"
 #include "CourseCatalogLoader.h"
@@ -6,6 +11,7 @@
 #include <wx/stdpaths.h>
 #include <wx/scrolwin.h>
 
+/** @brief Ensures user data dir exists; sets profile path; builds UI, catalog, profile. */
 StudentProfilePanel::StudentProfilePanel(wxWindow* parent)
     : wxPanel(parent, wxID_ANY) {
     wxStandardPaths& stdPaths = wxStandardPaths::Get();
@@ -18,6 +24,7 @@ StudentProfilePanel::StudentProfilePanel(wxWindow* parent)
     LoadProfile();
 }
 
+/** @brief Lays out controls inside a wxScrolledWindow and binds wx events. */
 void StudentProfilePanel::BuildUI() {
     wxScrolledWindow* scroll = new wxScrolledWindow(this, wxID_ANY);
     scroll->SetScrollRate(0, 20);
@@ -92,6 +99,7 @@ void StudentProfilePanel::BuildUI() {
     specializationCombo->Bind(wxEVT_COMBOBOX, &StudentProfilePanel::OnSelectionChanged, this);
 }
 
+/** @brief Tries executable-relative and cwd paths for data/courses.txt; fills checklist on success. */
 void StudentProfilePanel::LoadCatalog() {
     std::vector<std::string> pathsToTry;
     wxString exePath = wxStandardPaths::Get().GetExecutablePath();
@@ -117,18 +125,21 @@ void StudentProfilePanel::LoadCatalog() {
     PopulateCoursesCheckList();
 }
 
+/** @brief Appends Academic::GetYearOptions() to yearCombo. */
 void StudentProfilePanel::PopulateYearCombo() {
     const auto& years = Academic::GetYearOptions();
     for (const auto& y : years)
         yearCombo->Append(wxString::FromUTF8(y));
 }
 
+/** @brief Appends specializations (id + name) to specializationCombo. */
 void StudentProfilePanel::PopulateSpecializationCombo() {
     const auto& specs = Academic::GetSpecializations();
     for (const auto& s : specs)
         specializationCombo->Append(wxString::FromUTF8(s.id + " - " + s.name));
 }
 
+/** @brief Rebuilds the checklist from catalog (code - title per row). */
 void StudentProfilePanel::PopulateCoursesCheckList() {
     coursesCheckList->Clear();
     const std::vector<std::unique_ptr<Course>>& courses = catalog.getAllCourses();
@@ -139,6 +150,7 @@ void StudentProfilePanel::PopulateCoursesCheckList() {
     }
 }
 
+/** @brief Rebuilds completed list box from profile.completedCourseIds. */
 void StudentProfilePanel::RefreshCompletedCoursesList() {
     completedCoursesList->Clear();
     for (const std::string& code : profile.completedCourseIds) {
@@ -150,6 +162,7 @@ void StudentProfilePanel::RefreshCompletedCoursesList() {
     }
 }
 
+/** @brief Sets combo selections from profile and refreshes completed + missing lists. */
 void StudentProfilePanel::SyncUIFromProfile() {
     yearCombo->SetSelection(wxNOT_FOUND);
     const auto& years = Academic::GetYearOptions();
@@ -171,6 +184,7 @@ void StudentProfilePanel::SyncUIFromProfile() {
     RefreshMissingRequirements();
 }
 
+/** @brief Writes selected year and specialization into profile only. */
 void StudentProfilePanel::SyncYearSpecFromUI() {
     int yearIdx = yearCombo->GetSelection();
     if (yearIdx >= 0) {
@@ -184,6 +198,7 @@ void StudentProfilePanel::SyncYearSpecFromUI() {
     }
 }
 
+/** @brief Updates year/spec from UI, recomputes missing graduation courses, refreshes missingList. */
 void StudentProfilePanel::RefreshMissingRequirements() {
     SyncYearSpecFromUI();
     std::vector<std::string> missing = profile.GetMissingGraduationRequirements();
@@ -198,17 +213,20 @@ void StudentProfilePanel::RefreshMissingRequirements() {
     UpdateSelectionStatus();
 }
 
+/** @brief Sets the status line from the count of completed courses. */
 void StudentProfilePanel::UpdateSelectionStatus() {
     size_t count = profile.completedCourseIds.size();
     wxString msg = wxString::Format("%zu course%s in completed list. Click Save Profile to save to your profile.", count, count == 1 ? "" : "s");
     selectionStatusText->SetLabel(msg);
 }
 
+/** @brief Loads profile.txt from user data dir and applies to UI. */
 void StudentProfilePanel::LoadProfile() {
     profile.LoadFromFile(profilePath.ToStdString());
     SyncUIFromProfile();
 }
 
+/** @brief Persists profile (year, spec, completed) after syncing year/spec from combos. */
 void StudentProfilePanel::OnSave(wxCommandEvent&) {
     SyncYearSpecFromUI();
     if (profile.SaveToFile(profilePath.ToStdString())) {
@@ -222,6 +240,7 @@ void StudentProfilePanel::OnSave(wxCommandEvent&) {
     }
 }
 
+/** @brief Appends checked catalog rows to profile.completedCourseIds and clears those checks. */
 void StudentProfilePanel::OnAddToCompleted(wxCommandEvent&) {
     const std::vector<std::unique_ptr<Course>>& courses = catalog.getAllCourses();
     if (courses.empty() || coursesCheckList->GetCount() == 0) {
@@ -252,6 +271,7 @@ void StudentProfilePanel::OnAddToCompleted(wxCommandEvent&) {
         wxMessageBox("Check one or more courses in the list (use the checkbox), or double-click a course to add it. Already-completed courses are skipped.", "Nothing to add", wxOK | wxICON_INFORMATION, this);
 }
 
+/** @brief Adds the double-clicked row’s course code if not already completed. */
 void StudentProfilePanel::OnCoursesCheckListDoubleClick(wxCommandEvent& event) {
     const std::vector<std::unique_ptr<Course>>& courses = catalog.getAllCourses();
     int i = event.GetInt();
@@ -270,6 +290,7 @@ void StudentProfilePanel::OnCoursesCheckListDoubleClick(wxCommandEvent& event) {
     selectionStatusText->SetLabel(wxString::FromUTF8(code + " added to completed list."));
 }
 
+/** @brief Removes the double-clicked course from completed (same as Remove button). */
 void StudentProfilePanel::OnCompletedCoursesDoubleClick(wxCommandEvent& event) {
     int sel = completedCoursesList->GetSelection();
     if (sel < 0)
@@ -289,10 +310,12 @@ void StudentProfilePanel::OnCompletedCoursesDoubleClick(wxCommandEvent& event) {
     }
 }
 
+/** @brief Remembers selection so Remove works after focus moves to the button (macOS). */
 void StudentProfilePanel::OnCompletedListSelected(wxCommandEvent& event) {
     lastCompletedListSelection = event.GetInt();
 }
 
+/** @brief Erases selected (or last selected) course code from profile. */
 void StudentProfilePanel::OnRemoveFromCompleted(wxCommandEvent&) {
     int sel = completedCoursesList->GetSelection();
     if (sel < 0)
@@ -313,6 +336,7 @@ void StudentProfilePanel::OnRemoveFromCompleted(wxCommandEvent&) {
     }
 }
 
+/** @brief Refreshes missing requirements when year or specialization changes. */
 void StudentProfilePanel::OnSelectionChanged(wxCommandEvent&) {
     RefreshMissingRequirements();
 }

@@ -1,3 +1,8 @@
+/**
+ * @file CourseCatalog.h
+ * @brief In-memory registry of courses with lookup by course code.
+ */
+
 #ifndef COURSECATALOG_H
 #define COURSECATALOG_H
 #include <string>
@@ -6,7 +11,12 @@
 #include <memory>
 #include "Course.h"
 
-/** @brief Stores and looks up courses */
+/**
+ * @class CourseCatalog
+ * @brief Stores courses in insertion order and provides O(1) lookup by code via an internal map.
+ *
+ * Populated by CourseCatalogLoader; shared across UI panels (catalog browser, student profile, schedule).
+ */
 class CourseCatalog {
 private:
     std::vector<std::unique_ptr<Course>> courses;
@@ -14,26 +24,35 @@ private:
 
 public:
     CourseCatalog();
-    /** @brief Adds a course to the catalog
-     *  @param course The course to add
-     *  @return True if the course was added
+
+    /**
+     * @brief Inserts a course if its code is not already present.
+     * @param course Ownership transferred to the catalog on success.
+     * @return True if added; false if null or duplicate code.
      */
     bool addCourse(std::unique_ptr<Course> course);
-    /** @brief Gets a course by code
-     *  @param code Course code
-     *  @return Matching course or nullptr
+
+    /**
+     * @brief Looks up a course by code (e.g. "CS1027").
+     * @param code Course code string.
+     * @return Pointer to the course, or nullptr if not found.
      */
     Course* getCourse(const std::string& code) const;
-    /** @brief Checks whether a course exists
-     *  @param code Course code
-     *  @return True if the course exists
+
+    /**
+     * @brief Tests whether a course code exists in the catalog.
+     * @param code Course code string.
+     * @return True if present.
      */
     bool containsCourse(const std::string& code) const;
-    /** @brief Gets all courses
-     *  @return All courses in the catalog
+
+    /**
+     * @brief Returns all courses in load order.
+     * @return Const reference to the internal vector of unique_ptr<Course>.
      */
     const std::vector<std::unique_ptr<Course>>& getAllCourses() const;
-    /** @brief Removes all courses from the catalog */
+
+    /** @brief Removes every course and clears the code map. */
     void clear();
 };
 
