@@ -10,6 +10,8 @@
 #include <memory>
 #include <sstream>
 #include <vector>
+#include <iostream>
+#include <wx/msgdlg.h>
 
 namespace {
 
@@ -23,8 +25,10 @@ struct PendingCourse {
     std::string title;
     double credits = 0.0;
     bool hasCredits = false;
+    bool elective = false;
     std::vector<std::string> prerequisiteCodes;
     std::vector<std::string> exclusionCodes;
+    std::string breadthCategory;
     std::vector<PendingOffering> offerings;
     std::vector<std::vector<std::string>> oneOfGroups;
     std::vector<std::pair<double, std::vector<std::string>>> creditsFromGroups;
@@ -130,6 +134,19 @@ bool CourseCatalogLoader::loadFromFile(const std::string& filePath, CourseCatalo
             currentCourse.hasCredits = true;
             continue;
         }
+        if (startsWith(line, "BREADTH:")) {
+            currentCourse.breadthCategory = trim(line.substr(8));
+            continue;
+        }
+        if (startsWith(line, "ELECTIVE:")) {
+            std::string value = trim(line.substr(9));
+            if (value == "true" || value == "yes" || value == "1") {
+                currentCourse.elective = true;
+            } else {
+                currentCourse.elective = false;
+            }
+            continue;
+        }
         if (startsWith(line, "PREREQUISITES:")) {
             currentCourse.prerequisiteCodes = splitCommaSeparatedList(line.substr(14));
             continue;
@@ -205,6 +222,7 @@ bool CourseCatalogLoader::loadFromFile(const std::string& filePath, CourseCatalo
             );
             continue;
         }
+        std::cerr << "Unknown line in catalog: " << line << std::endl;
         return false;
     }
     if (inCourseBlock) {
@@ -212,6 +230,8 @@ bool CourseCatalogLoader::loadFromFile(const std::string& filePath, CourseCatalo
     }
     for (const PendingCourse& pendingCourse : pendingCourses) {
         std::unique_ptr<Course> course = std::make_unique<Course>(pendingCourse.code, pendingCourse.title, pendingCourse.credits);
+        course->setBreadthCategory(pendingCourse.breadthCategory);
+        course->setElective(pendingCourse.elective);
         if (!catalog.addCourse(std::move(course))) {
             return false;
         }

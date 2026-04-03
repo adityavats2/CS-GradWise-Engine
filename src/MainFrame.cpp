@@ -13,7 +13,7 @@ MainFrame::MainFrame(const wxString& title)
     scheduleValidationButton = new wxButton(mainPanel, wxID_ANY, "Schedule Validation");
     outputExportButton = new wxButton(mainPanel, wxID_ANY, "Output and Export");
     pageBook = new wxSimplebook(mainPanel, wxID_ANY);
-    studentProfilePanel = new StudentProfilePanel(pageBook);
+    studentProfilePanel = new StudentProfilePanel(pageBook, &catalog);
     courseCatalogPanel = new CourseCatalogPanel(pageBook, &catalog);
     scheduleValidationPanel = new ScheduleValidationPanel(pageBook);
     outputExportPanel = new OutputExportPanel(pageBook, &catalog);
@@ -48,6 +48,7 @@ void MainFrame::ShowPage(int pageIndex) {
 
 /** @brief Opens the student profile page */
 void MainFrame::OnStudentProfile(wxCommandEvent& event) {
+    studentProfilePanel->RefreshCatalogView();
     ShowPage(0);
 }
 

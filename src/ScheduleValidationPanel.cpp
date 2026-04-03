@@ -20,9 +20,12 @@
 ScheduleValidationPanel::ScheduleValidationPanel(wxWindow* parent)
     : wxPanel(parent, wxID_ANY)
 {
+    wxScrolledWindow* scroll = new wxScrolledWindow(this, wxID_ANY);
+    scroll->SetScrollRate(0, 20);
+
     wxBoxSizer* mainSizer = new wxBoxSizer(wxVERTICAL);
 
-    wxStaticText* title = new wxStaticText(this, wxID_ANY, "Schedule Validation");
+    wxStaticText* title = new wxStaticText(scroll, wxID_ANY, "Schedule Validation");
     wxFont titleFont = title->GetFont();
     titleFont.SetPointSize(14);
     title->SetFont(titleFont);
@@ -31,10 +34,10 @@ ScheduleValidationPanel::ScheduleValidationPanel(wxWindow* parent)
     // Term selection
     wxBoxSizer* termSizer = new wxBoxSizer(wxHORIZONTAL);
 
-    termSizer->Add(new wxStaticText(this, wxID_ANY, "Season:"), 0, wxRIGHT | wxALIGN_CENTER_VERTICAL, 5);
+    termSizer->Add(new wxStaticText(scroll, wxID_ANY, "Season:"), 0, wxRIGHT | wxALIGN_CENTER_VERTICAL, 5);
 
     seasonCombo = new wxComboBox(
-        this,
+        scroll,
         wxID_ANY,
         wxEmptyString,
         wxDefaultPosition,
@@ -50,37 +53,37 @@ ScheduleValidationPanel::ScheduleValidationPanel(wxWindow* parent)
 
     termSizer->Add(seasonCombo, 0, wxRIGHT, 10);
 
-    termSizer->Add(new wxStaticText(this, wxID_ANY, "Year:"), 0, wxRIGHT | wxALIGN_CENTER_VERTICAL, 5);
+    termSizer->Add(new wxStaticText(scroll, wxID_ANY, "Year:"), 0, wxRIGHT | wxALIGN_CENTER_VERTICAL, 5);
 
-    yearInput = new wxTextCtrl(this, wxID_ANY, "2026");
+    yearInput = new wxTextCtrl(scroll, wxID_ANY, "2026");
     termSizer->Add(yearInput, 0);
 
     mainSizer->Add(termSizer, 0, wxLEFT | wxRIGHT | wxBOTTOM, 10);
 
     wxBoxSizer* preferencesSizer = new wxBoxSizer(wxHORIZONTAL);
-    preferMorningCheckBox = new wxCheckBox(this, wxID_ANY, "Prefer Morning Classes");
-    preferCompactDaysCheckBox = new wxCheckBox(this, wxID_ANY, "Prefer Compact Days");
-    morningWeightSpinCtrl = new wxSpinCtrl(this, wxID_ANY);
+    preferMorningCheckBox = new wxCheckBox(scroll, wxID_ANY, "Prefer Morning Classes");
+    preferCompactDaysCheckBox = new wxCheckBox(scroll, wxID_ANY, "Prefer Compact Days");
+    morningWeightSpinCtrl = new wxSpinCtrl(scroll, wxID_ANY);
     morningWeightSpinCtrl->SetRange(0, 100);
     morningWeightSpinCtrl->SetValue(50);
-    compactDaysWeightSpinCtrl = new wxSpinCtrl(this, wxID_ANY);
+    compactDaysWeightSpinCtrl = new wxSpinCtrl(scroll, wxID_ANY);
     compactDaysWeightSpinCtrl->SetRange(0, 100);
     compactDaysWeightSpinCtrl->SetValue(50);
-    enforceEarliestStartCheckBox = new wxCheckBox(this, wxID_ANY, "Enforce no classes before");
-    earliestStartHourSpinCtrl = new wxSpinCtrl(this, wxID_ANY);
+    enforceEarliestStartCheckBox = new wxCheckBox(scroll, wxID_ANY, "Enforce no classes before");
+    earliestStartHourSpinCtrl = new wxSpinCtrl(scroll, wxID_ANY);
     earliestStartHourSpinCtrl->SetRange(0, 23);
     earliestStartHourSpinCtrl->SetValue(9);
     includeSavedFuturePlansInPathwayCheckBox = new wxCheckBox(
-        this,
+        scroll,
         wxID_ANY,
         "Include saved future planned terms in pathway context"
     );
     includeSavedFuturePlansInPathwayCheckBox->SetValue(false);
     preferencesSizer->Add(preferMorningCheckBox, 0, wxRIGHT, 15);
-    preferencesSizer->Add(new wxStaticText(this, wxID_ANY, "Morning %:"), 0, wxRIGHT | wxALIGN_CENTER_VERTICAL, 5);
+    preferencesSizer->Add(new wxStaticText(scroll, wxID_ANY, "Morning %:"), 0, wxRIGHT | wxALIGN_CENTER_VERTICAL, 5);
     preferencesSizer->Add(morningWeightSpinCtrl, 0, wxRIGHT, 15);
     preferencesSizer->Add(preferCompactDaysCheckBox, 0, wxRIGHT, 15);
-    preferencesSizer->Add(new wxStaticText(this, wxID_ANY, "Compact %:"), 0, wxRIGHT | wxALIGN_CENTER_VERTICAL, 5);
+    preferencesSizer->Add(new wxStaticText(scroll, wxID_ANY, "Compact %:"), 0, wxRIGHT | wxALIGN_CENTER_VERTICAL, 5);
     preferencesSizer->Add(compactDaysWeightSpinCtrl, 0, wxRIGHT, 15);
     preferencesSizer->Add(enforceEarliestStartCheckBox, 0, wxRIGHT, 5);
     preferencesSizer->Add(earliestStartHourSpinCtrl, 0, wxRIGHT, 15);
@@ -89,70 +92,78 @@ ScheduleValidationPanel::ScheduleValidationPanel(wxWindow* parent)
 
     // Courses list
     mainSizer->Add(
-        new wxStaticText(this, wxID_ANY, "Select planned courses:"),
+        new wxStaticText(scroll, wxID_ANY, "Select planned courses:"),
         0,
         wxLEFT | wxRIGHT | wxTOP,
         10
     );
 
     coursesCheckList = new wxCheckListBox(
-        this,
+        scroll,
         wxID_ANY,
         wxDefaultPosition,
         wxSize(400,200)
     );
 
+    coursesCheckList->SetMinSize(wxSize(-1, 160));
     mainSizer->Add(coursesCheckList, 1, wxEXPAND | wxALL, 10);
 
     // Validate/Clear buttons
     wxBoxSizer* actionsSizer = new wxBoxSizer(wxHORIZONTAL);
-    validateButton = new wxButton(this, wxID_ANY, "Validate Schedule");
-    clearPlannedScheduleButton = new wxButton(this, wxID_ANY, "Clear Saved Planned Schedule");
+    validateButton = new wxButton(scroll, wxID_ANY, "Validate Schedule");
+    clearPlannedScheduleButton = new wxButton(scroll, wxID_ANY, "Clear Saved Planned Schedule");
     actionsSizer->Add(validateButton, 0, wxRIGHT, 10);
     actionsSizer->Add(clearPlannedScheduleButton, 0);
     mainSizer->Add(actionsSizer, 0, wxALL, 10);
 
     // Results output
     resultsText = new wxTextCtrl(
-        this,
+        scroll,
         wxID_ANY,
         "",
         wxDefaultPosition,
         wxSize(-1,150),
         wxTE_MULTILINE | wxTE_READONLY
     );
-
-    mainSizer->Add(resultsText, 0, wxEXPAND | wxALL, 10);
+    resultsText->SetMinSize(wxSize(-1, 120));
+    mainSizer->Add(resultsText, 1, wxEXPAND | wxALL, 10);
 
     wxBoxSizer* generatedOptionSizer = new wxBoxSizer(wxHORIZONTAL);
-    generatedOptionSizer->Add(new wxStaticText(this, wxID_ANY, "Generated Option:"), 0, wxRIGHT | wxALIGN_CENTER_VERTICAL, 5);
-    generatedOptionsChoice = new wxChoice(this, wxID_ANY);
+    generatedOptionSizer->Add(new wxStaticText(scroll, wxID_ANY, "Generated Option:"), 0, wxRIGHT | wxALIGN_CENTER_VERTICAL, 5);
+    generatedOptionsChoice = new wxChoice(scroll, wxID_ANY);
     generatedOptionsChoice->Enable(false);
     generatedOptionSizer->Add(generatedOptionsChoice, 0);
     mainSizer->Add(generatedOptionSizer, 0, wxLEFT | wxRIGHT | wxBOTTOM, 10);
 
     generatedOptionDetailsTextCtrl = new wxTextCtrl(
-        this,
+        scroll,
         wxID_ANY,
         "No generated option selected.",
         wxDefaultPosition,
         wxSize(-1, 100),
         wxTE_MULTILINE | wxTE_READONLY
     );
+    generatedOptionDetailsTextCtrl->SetMinSize(wxSize(-1, 100));
     mainSizer->Add(generatedOptionDetailsTextCtrl, 0, wxEXPAND | wxLEFT | wxRIGHT | wxBOTTOM, 10);
 
-    mainSizer->Add(new wxStaticText(this, wxID_ANY, "Saved Earlier-Term Plans"), 0, wxLEFT | wxRIGHT | wxTOP, 10);
+    mainSizer->Add(new wxStaticText(scroll, wxID_ANY, "Saved Earlier-Term Plans"), 0, wxLEFT | wxRIGHT | wxTOP, 10);
     savedEarlierPlansTextCtrl = new wxTextCtrl(
-        this,
+        scroll,
         wxID_ANY,
         "",
         wxDefaultPosition,
         wxSize(-1, 140),
         wxTE_MULTILINE | wxTE_READONLY
     );
+    savedEarlierPlansTextCtrl->SetMinSize(wxSize(-1, 120));
     mainSizer->Add(savedEarlierPlansTextCtrl, 0, wxEXPAND | wxALL, 10);
 
-    SetSizer(mainSizer);
+    scroll->SetSizer(mainSizer);
+    scroll->FitInside();
+
+    wxBoxSizer* panelSizer = new wxBoxSizer(wxVERTICAL);
+    panelSizer->Add(scroll, 1, wxEXPAND);
+    SetSizer(panelSizer);
 
     InitPlannedSchedulePath();
     LoadPlannedSchedule();

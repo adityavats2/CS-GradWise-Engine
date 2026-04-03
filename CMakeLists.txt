@@ -5,7 +5,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 find_package(wxWidgets REQUIRED COMPONENTS core base)
 include(${wxWidgets_USE_FILE})
-add_executable(group04
+add_executable(group04 WIN32
     src/main.cpp
     src/MainFrame.cpp
     src/StudentProfile.cpp
@@ -23,6 +23,7 @@ add_executable(group04
     src/ScheduleGenerationEngine.cpp
     src/PlannedSchedule.cpp
     src/PlannedScheduleStorage.cpp
+    src/CourseCatalogSaver.cpp
 )
 target_include_directories(group04 PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src)
 target_link_libraries(group04 ${wxWidgets_LIBRARIES})

@@ -8,6 +8,9 @@
 
 #include <wx/wx.h>
 #include <wx/checklst.h>
+#include <wx/listbox.h>
+#include <vector>
+#include <string>
 #include "StudentProfile.h"
 #include "CourseCatalog.h"
 
@@ -28,27 +31,35 @@ public:
 
     /** @brief Reloads profile from disk and refreshes all dependent controls. */
     void LoadProfile();
+    StudentProfilePanel(wxWindow* parent, CourseCatalog* catalog);
+    void RefreshCatalogView();
 
 private:
     StudentProfile profile;
+    CourseCatalog* catalog;
     wxString profilePath;
-    CourseCatalog catalog;
 
     wxComboBox* yearCombo;
     wxComboBox* specializationCombo;
     wxCheckListBox* coursesCheckList;
     wxListBox* completedCoursesList;
-    int lastCompletedListSelection;
+    wxListBox* missingList;
     wxButton* addButton;
     wxButton* removeButton;
     wxButton* saveButton;
-    wxListBox* missingList;
-    wxStaticText* missingLabel;
     wxStaticText* catalogStatusText;
     wxStaticText* selectionStatusText;
-
+    wxStaticText* missingLabel;
+    wxStaticText* breadthStatusLabel;
+    wxStaticText* breadthCompletedByLabel;
+    wxStaticText* scienceBreadthLabel;
+    wxStaticText* humanitiesBreadthLabel;
+    wxStaticText* socialScienceBreadthLabel;
+    int lastCompletedListSelection;
+    
     void BuildUI();
     void LoadCatalog();
+    void LoadProfile();
     void PopulateYearCombo();
     void PopulateSpecializationCombo();
     void PopulateCoursesCheckList();

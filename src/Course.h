@@ -14,6 +14,8 @@ private:
     std::vector<Prerequisite> prerequisites;
     std::vector<Course*> exclusions;
     std::vector<CourseOffering> offerings;
+    std::string breadthCategory;
+    bool elective;
 
 public:
     Course();
@@ -54,6 +56,11 @@ public:
     /** @brief Adds a prerequisite rule
      *  @param prerequisite The prerequisite to add
      */
+    const std::string& getBreadthCategory() const;
+    /**
+     * @brief Returns breadth category
+     * @return breadth category
+     */
     void addPrerequisite(const Prerequisite& prerequisite);
     /** @brief Adds exclusion
      *  @param exclusion Exclusion course
@@ -63,11 +70,36 @@ public:
      *  @param offering Course offering
      */
     void addOffering(const CourseOffering& offering);
+    
     /** @brief Checks whether the course is offered in a term
      *  @param term Term to check
      *  @return True if the course is offered in the term
      */
     bool isOfferedIn(const Term& term) const;
+    
+    /**
+     * @brief Sets the breadth category for the course
+     * @param value the breadth category that the course is assigned
+     */
+    void setBreadthCategory(const std::string& value);
+
+    /**
+     * @brief determines whether or not the corse counts towards breadth requirement
+     * @returns true/false whether or not the the course has a breadth category implemented
+     */
+    bool countsForBreadth() const;
+
+    /**
+     * @brief indicates whether or not the course is marked as an elective
+     * @returns true if elective, false otherwise
+     */
+    bool isElective() const;
+
+    /**
+     * @brief Determines whether or not this course is an elective
+     * @param value True if elective, false otherwise
+     */
+    void setElective(bool value);
 };
 
 #endif

@@ -1,8 +1,8 @@
 #include "Course.h"
 
-Course::Course() : code(""), title(""), credits(0.0), prerequisites(), exclusions(), offerings() {}
+Course::Course() : code(""), title(""), credits(0.0), breadthCategory(""), elective(false), prerequisites(), exclusions(), offerings() {}
 
-Course::Course(const std::string& code, const std::string& title, double credits) : code(code), title(title), credits(credits), prerequisites(), exclusions(), offerings() {}
+Course::Course(const std::string& code, const std::string& title, double credits) : code(code), title(title), credits(credits), breadthCategory(""), elective(false), prerequisites(), exclusions(), offerings() {}
 
 const std::string& Course::getCode() const {
     return code;
@@ -15,6 +15,19 @@ const std::string& Course::getTitle() const {
 double Course::getCredits() const {
     return credits;
 }
+
+void Course::setBreadthCategory(const std::string& value) {
+    breadthCategory = value;
+}
+
+const std::string& Course::getBreadthCategory() const {
+    return breadthCategory;
+}
+
+bool Course::countsForBreadth() const {
+    return !breadthCategory.empty();
+}
+
 
 std::vector<Course*> Course::getPrerequisites() const {
     std::vector<Course*> flat;
@@ -55,4 +68,12 @@ bool Course::isOfferedIn(const Term& term) const {
         }
     }
     return false;
+}
+
+bool Course::isElective() const {
+    return elective;
+}
+
+void Course::setElective(bool value) {
+    elective = value;
 }

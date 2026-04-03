@@ -17,6 +17,9 @@
  * Text file format: @c year=..., @c specialization=..., @c course=CODE per line. Used for persistence
  * and prerequisite checks elsewhere in the app.
  */
+class CourseCatalog;
+
+/** @brief Student profile: academic history and goals; persists to file and remains editable */
 class StudentProfile {
 public:
     StudentProfile() = default;
@@ -36,6 +39,39 @@ public:
      * @param path File path to read.
      * @return True if opened and read; false if file missing (fields may be unchanged).
      */
+    
+    /**
+     * @brief Get the course IDs that have completed a breadth category
+     * @param catalog the course catalog to reference to check the details of breadth catagory of a certain course
+     * @param category the breadth category to check
+     * @return a vector of completed course IDS of courses that have completed the breadth requirement
+     */
+    std::vector<std::string> GetCompletedBreadthCourseIdsForCategory(const CourseCatalog& catalog, const std::string& category) const;
+    
+    /**
+     * @brief returns the breadth requirements that have yet to be completed
+     * @param catalog the course catalog to reference to check the details of breadth catagory of a certain course
+     * @return a vector of missing breadth requirments
+     */
+    std::vector<std::string> GetMissingBreadthCategories(const CourseCatalog& catalog) const;
+    
+    /**
+     * @brief calculates exactly how many credits have been put forward towards a certain breadth requirement
+     * @param catalog the course catalog to reference to check the details of breadth catagory of a certain course
+     * @param category the breadth category to check
+     * @return the total amount of credits that have gone towards a certain breadth category
+     */
+    double GetCompletedBreadthCreditsForCategory(const CourseCatalog& catalog, const std::string& category) const;
+    
+      /**
+     * @brief checks whether or not a certain breadth category has been completed
+     * @param catalog the course catalog to reference to check the details of breadth catagory of a certain course
+     * @param category the breadth category to check
+     * @return true of the breadth category has been completed, false otherwise
+     */
+    bool HasCompletedBreadthCredits(const CourseCatalog& catalog, const std::string& category, double requiredCredits) const;
+    
+    /** @brief Load profile from file; returns true on success */
     bool LoadFromFile(const std::string& path);
 
     /**

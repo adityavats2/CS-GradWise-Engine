@@ -7,6 +7,7 @@
 #include "AcademicData.h"
 #include "CourseCatalogLoader.h"
 #include <algorithm>
+#include <sstream>
 #include <wx/filename.h>
 #include <wx/stdpaths.h>
 #include <wx/scrolwin.h>
@@ -14,6 +15,8 @@
 /** @brief Ensures user data dir exists; sets profile path; builds UI, catalog, profile. */
 StudentProfilePanel::StudentProfilePanel(wxWindow* parent)
     : wxPanel(parent, wxID_ANY) {
+StudentProfilePanel::StudentProfilePanel(wxWindow* parent, CourseCatalog* catalog)
+    : wxPanel(parent, wxID_ANY), catalog(catalog) {
     wxStandardPaths& stdPaths = wxStandardPaths::Get();
     wxString userData = stdPaths.GetUserDataDir();
     if (!wxFileName::DirExists(userData))
@@ -80,6 +83,12 @@ void StudentProfilePanel::BuildUI() {
     mainSizer->Add(missingLabel, 0, wxLEFT | wxRIGHT | wxTOP, 10);
     missingList = new wxListBox(scroll, wxID_ANY, wxDefaultPosition, wxSize(420, 100), 0, nullptr, wxLB_SINGLE | wxLB_ALWAYS_SB);
     missingList->SetMinSize(wxSize(420, 100));
+    scienceBreadthLabel = new wxStaticText(scroll, wxID_ANY, "Science breadth: Missing");
+    mainSizer->Add(scienceBreadthLabel, 0, wxLEFT | wxRIGHT | wxTOP, 10);
+    humanitiesBreadthLabel = new wxStaticText(scroll, wxID_ANY, "Humanities breadth: Missing");
+    mainSizer->Add(humanitiesBreadthLabel, 0, wxLEFT | wxRIGHT | wxTOP, 10);
+    socialScienceBreadthLabel = new wxStaticText(scroll, wxID_ANY, "Social Science breadth: Missing");
+    mainSizer->Add(socialScienceBreadthLabel, 0, wxLEFT | wxRIGHT | wxTOP, 10);
     mainSizer->Add(missingList, 0, wxEXPAND | wxALL, 10);
 
     scroll->SetSizer(mainSizer);
@@ -101,26 +110,17 @@ void StudentProfilePanel::BuildUI() {
 
 /** @brief Tries executable-relative and cwd paths for data/courses.txt; fills checklist on success. */
 void StudentProfilePanel::LoadCatalog() {
-    std::vector<std::string> pathsToTry;
-    wxString exePath = wxStandardPaths::Get().GetExecutablePath();
-    wxString exeDir = wxFileName(exePath).GetPath();
-    pathsToTry.push_back((exeDir + "/../data/courses.txt").ToStdString());
-    pathsToTry.push_back((exeDir + "/data/courses.txt").ToStdString());
-    pathsToTry.push_back("data/courses.txt");
-    pathsToTry.push_back("../data/courses.txt");
-
-    bool loaded = false;
-    for (const std::string& path : pathsToTry) {
-        if (CourseCatalogLoader::loadFromFile(path, catalog)) {
-            loaded = true;
-            break;
-        }
-    }
-    if (!loaded) {
-        catalogStatusText->SetLabel("Catalog not loaded. Put data/courses.txt next to the app or in project root.");
+    if (catalog == nullptr) {
+        catalogStatusText->SetLabel("Catalog pointer is null.");
         return;
     }
-    const std::vector<std::unique_ptr<Course>>& courses = catalog.getAllCourses();
+
+    const std::vector<std::unique_ptr<Course>>& courses = catalog->getAllCourses();
+    if (courses.empty()) {
+        catalogStatusText->SetLabel("Catalog not loaded.");
+        return;
+    }
+
     catalogStatusText->SetLabel(wxString::Format("Catalog loaded: %zu courses.", courses.size()));
     PopulateCoursesCheckList();
 }
@@ -142,7 +142,7 @@ void StudentProfilePanel::PopulateSpecializationCombo() {
 /** @brief Rebuilds the checklist from catalog (code - title per row). */
 void StudentProfilePanel::PopulateCoursesCheckList() {
     coursesCheckList->Clear();
-    const std::vector<std::unique_ptr<Course>>& courses = catalog.getAllCourses();
+    const std::vector<std::unique_ptr<Course>>& courses = catalog->getAllCourses();
     for (const auto& ptr : courses) {
         const Course* c = ptr.get();
         if (c)
@@ -154,7 +154,7 @@ void StudentProfilePanel::PopulateCoursesCheckList() {
 void StudentProfilePanel::RefreshCompletedCoursesList() {
     completedCoursesList->Clear();
     for (const std::string& code : profile.completedCourseIds) {
-        Course* c = catalog.getCourse(code);
+        Course* c = catalog->getCourse(code);
         if (c)
             completedCoursesList->Append(wxString::FromUTF8(c->getCode() + " - " + c->getTitle()));
         else
@@ -201,15 +201,65 @@ void StudentProfilePanel::SyncYearSpecFromUI() {
 /** @brief Updates year/spec from UI, recomputes missing graduation courses, refreshes missingList. */
 void StudentProfilePanel::RefreshMissingRequirements() {
     SyncYearSpecFromUI();
+
     std::vector<std::string> missing = profile.GetMissingGraduationRequirements();
     missingList->Clear();
     for (const std::string& code : missing) {
-        Course* c = catalog.getCourse(code);
+        Course* c = catalog->getCourse(code);
         if (c)
             missingList->Append(wxString::FromUTF8(c->getCode() + " - " + c->getTitle()));
         else
             missingList->Append(wxString::FromUTF8(code));
     }
+
+    auto formatBreadthCategoryDisplay = [this](const std::string& category) -> wxString {
+        std::vector<std::string> ids = profile.GetCompletedBreadthCourseIdsForCategory(*catalog, category);
+        double credits = profile.GetCompletedBreadthCreditsForCategory(*catalog, category);
+        bool complete = profile.HasCompletedBreadthCredits(*catalog, category, 1.0);
+
+        std::ostringstream out;
+        out << category << " breadth: "
+            << (complete ? "Complete" : "Missing")
+            << " (" << credits << "/1.0 credits";
+
+        if (!ids.empty()) {
+            out << " — ";
+            for (std::size_t i = 0; i < ids.size(); i++) {
+                Course* c = catalog->getCourse(ids[i]);
+                if (i > 0) {
+                    out << ", ";
+                }
+                if (c != nullptr) {
+                    out << c->getCode() << " - " << c->getTitle();
+                } else {
+                    out << ids[i];
+                }
+            }
+        }
+
+        out << ")";
+        return wxString::FromUTF8(out.str());
+    };
+
+    const bool hasScience = profile.HasCompletedBreadthCredits(*catalog, "Science", 1.0);
+    const bool hasHumanities = profile.HasCompletedBreadthCredits(*catalog, "Humanities", 1.0);
+    const bool hasSocialScience = profile.HasCompletedBreadthCredits(*catalog, "Social Science", 1.0);
+
+    scienceBreadthLabel->SetLabel(formatBreadthCategoryDisplay("Science"));
+    scienceBreadthLabel->SetForegroundColour(
+        hasScience ? wxColour(0, 100, 0) : wxColour(180, 0, 0)
+    );
+
+    humanitiesBreadthLabel->SetLabel(formatBreadthCategoryDisplay("Humanities"));
+    humanitiesBreadthLabel->SetForegroundColour(
+        hasHumanities ? wxColour(0, 100, 0) : wxColour(180, 0, 0)
+    );
+
+    socialScienceBreadthLabel->SetLabel(formatBreadthCategoryDisplay("Social Science"));
+    socialScienceBreadthLabel->SetForegroundColour(
+        hasSocialScience ? wxColour(0, 100, 0) : wxColour(180, 0, 0)
+    );
+
     UpdateSelectionStatus();
 }
 
@@ -227,6 +277,15 @@ void StudentProfilePanel::LoadProfile() {
 }
 
 /** @brief Persists profile (year, spec, completed) after syncing year/spec from combos. */
+void StudentProfilePanel::RefreshCatalogView() {
+    if (catalog == nullptr) {
+        return;
+    }
+    PopulateCoursesCheckList();
+    RefreshCompletedCoursesList();
+    RefreshMissingRequirements();
+}
+
 void StudentProfilePanel::OnSave(wxCommandEvent&) {
     SyncYearSpecFromUI();
     if (profile.SaveToFile(profilePath.ToStdString())) {
@@ -242,7 +301,7 @@ void StudentProfilePanel::OnSave(wxCommandEvent&) {
 
 /** @brief Appends checked catalog rows to profile.completedCourseIds and clears those checks. */
 void StudentProfilePanel::OnAddToCompleted(wxCommandEvent&) {
-    const std::vector<std::unique_ptr<Course>>& courses = catalog.getAllCourses();
+    const std::vector<std::unique_ptr<Course>>& courses = catalog->getAllCourses();
     if (courses.empty() || coursesCheckList->GetCount() == 0) {
         wxMessageBox("No courses to add. Is the catalog loaded? (Check the message at the top.)", "Catalog empty", wxOK | wxICON_WARNING, this);
         return;
@@ -273,7 +332,7 @@ void StudentProfilePanel::OnAddToCompleted(wxCommandEvent&) {
 
 /** @brief Adds the double-clicked row’s course code if not already completed. */
 void StudentProfilePanel::OnCoursesCheckListDoubleClick(wxCommandEvent& event) {
-    const std::vector<std::unique_ptr<Course>>& courses = catalog.getAllCourses();
+    const std::vector<std::unique_ptr<Course>>& courses = catalog->getAllCourses();
     int i = event.GetInt();
     if (i < 0 || static_cast<size_t>(i) >= courses.size())
         return;
