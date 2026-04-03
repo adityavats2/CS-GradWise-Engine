@@ -37,15 +37,13 @@
 class CourseCatalogPanel : public wxPanel {
 private:
     wxTextCtrl* filePathInput;   /*!< Default path to courses file (e.g. ../data/courses.txt) */
-    wxButton* loadButton;
-    wxListCtrl* courseList;      /*!< Report: Code, Title, Credits */
+    wxButton* loadButton;     /*!< Report: Code, Title, Credits */
     wxButton* saveCatalogButton;
     wxListCtrl* courseList;
     wxStaticText* detailsLabel;
     wxTextCtrl* detailsText;     /*!< Read-only details for selected course */
     wxStaticText* statusText;
     CourseCatalog* catalog;      /*!< Non-owning; must outlive this panel */
-
 
     wxTextCtrl* newCourseCodeInput;
     wxTextCtrl* newCourseTitleInput;
@@ -80,7 +78,6 @@ private:
     std::vector<TimeSlot> currentOfferingTimeSlots;
     std::vector<CourseOffering> pendingOfferings;
 
-    CourseCatalog* catalog;
     /** @brief Handles catalog loading
      *  @param event Button event
      */

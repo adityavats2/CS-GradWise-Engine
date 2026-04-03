@@ -30,7 +30,6 @@ public:
     explicit StudentProfilePanel(wxWindow* parent);
 
     /** @brief Reloads profile from disk and refreshes all dependent controls. */
-    void LoadProfile();
     StudentProfilePanel(wxWindow* parent, CourseCatalog* catalog);
     void RefreshCatalogView();
 

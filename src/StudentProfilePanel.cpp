@@ -13,8 +13,6 @@
 #include <wx/scrolwin.h>
 
 /** @brief Ensures user data dir exists; sets profile path; builds UI, catalog, profile. */
-StudentProfilePanel::StudentProfilePanel(wxWindow* parent)
-    : wxPanel(parent, wxID_ANY) {
 StudentProfilePanel::StudentProfilePanel(wxWindow* parent, CourseCatalog* catalog)
     : wxPanel(parent, wxID_ANY), catalog(catalog) {
     wxStandardPaths& stdPaths = wxStandardPaths::Get();

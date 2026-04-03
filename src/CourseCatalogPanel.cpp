@@ -15,9 +15,7 @@
 #include <cctype>
 
 namespace {
-/** @brief Formats minutes since midnight as HH:MM for offering display. */
-std::string formatTime(int minutesFromMidnight) {
-    std::string trim(const std::string& text) {
+std::string trim(const std::string& text) {
     std::size_t start = 0;
     while (start < text.size() && std::isspace(static_cast<unsigned char>(text[start]))) {
         start++;
@@ -61,6 +59,7 @@ std::vector<std::string> splitNonEmptyLines(const std::string& text) {
     return lines;
 }
 
+/** @brief Formats minutes since midnight as HH:MM for offering display. */
 std::string formatTime24(int minutesFromMidnight) {
     int hours = minutesFromMidnight / 60;
     int minutes = minutesFromMidnight % 60;
